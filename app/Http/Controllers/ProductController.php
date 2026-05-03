@@ -90,12 +90,63 @@ class ProductController extends Controller
             ->where('store_id', $store->id)
             ->firstOrFail();
 
-        $validated = $request->validate([
+        // Base validation rules
+        $validationRules = [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string|max:1000',
             'language' => 'required|in:fr,en,ar',
-        ]);
+        ];
+
+        // Add validation for custom form fields
+        $customFieldsData = [];
+        if (!empty($product->form_fields)) {
+            foreach ($product->form_fields as $field) {
+                $fieldName = 'custom_' . $field['id'];
+                
+                // Build validation rule
+                $rules = [];
+                if ($field['required'] ?? false) {
+                    $rules[] = 'required';
+                } else {
+                    $rules[] = 'nullable';
+                }
+                
+                // Add type-specific validation
+                switch ($field['type']) {
+                    case 'email':
+                        $rules[] = 'email';
+                        $rules[] = 'max:255';
+                        break;
+                    case 'tel':
+                        $rules[] = 'string';
+                        $rules[] = 'max:20';
+                        break;
+                    case 'number':
+                        $rules[] = 'numeric';
+                        break;
+                    case 'textarea':
+                        $rules[] = 'string';
+                        $rules[] = 'max:1000';
+                        break;
+                    default:
+                        $rules[] = 'string';
+                        $rules[] = 'max:255';
+                }
+                
+                $validationRules[$fieldName] = implode('|', $rules);
+            }
+        }
+
+        $validated = $request->validate($validationRules);
+
+        // Extract custom fields from validated data
+        foreach ($validated as $key => $value) {
+            if (str_starts_with($key, 'custom_')) {
+                $fieldId = substr($key, 7); // Remove 'custom_' prefix
+                $customFieldsData[$fieldId] = $value;
+            }
+        }
 
         $lead = \App\Models\ProductLead::create([
             'product_id' => $product->id,
@@ -103,6 +154,7 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'note' => $validated['note'],
+            'custom_fields' => !empty($customFieldsData) ? $customFieldsData : null,
             'language' => $validated['language'],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),

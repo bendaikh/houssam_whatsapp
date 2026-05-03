@@ -26,7 +26,7 @@
             content_ids: ['{{ $product->id }}'],
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'MAD'
+            currency: 'DHS'
         });
     </script>
     <noscript>
@@ -47,7 +47,7 @@
             content_id: '{{ $product->id }}',
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'MAD'
+            currency: 'DHS'
           });
         }(window, document, 'ttq');
     </script>
@@ -74,7 +74,7 @@
         </div>
     </nav>
 
-    @if($product->landing_page_hero_title)
+    @if($product->landing_page_hero_description || $product->landing_page_ar)
     <!-- AI-Generated Landing Page -->
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Hero Section -->
@@ -82,7 +82,7 @@
             <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-white shadow-2xl">
                 <div class="grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <h1 class="text-5xl font-bold mb-6 leading-tight">{{ $product->landing_page_hero_title }}</h1>
+                        <h1 class="text-5xl font-bold mb-6 leading-tight">{{ $product->name }}</h1>
                         
                         <div class="flex items-center gap-6 mb-8">
                             <div>
@@ -91,9 +91,9 @@
                                         {{ $product->price_range }}
                                     </div>
                                 @else
-                                    <div class="text-5xl font-bold">{{ number_format($product->price, 2) }} MAD</div>
+                                    <div class="text-5xl font-bold">{{ number_format($product->price, 2) }} DHS</div>
                                     @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                    <div class="text-lg line-through text-white/70">{{ number_format($product->compare_at_price, 2) }} MAD</div>
+                                    <div class="text-lg line-through text-white/70">{{ number_format($product->compare_at_price, 2) }} DHS</div>
                                     @endif
                                 @endif
                             </div>
@@ -132,10 +132,10 @@
                                         <div class="flex-1">
                                             <div class="flex items-center justify-between flex-wrap gap-3">
                                                 <div class="text-lg font-semibold text-yellow-300">
-                                                    Buy {{ $promotion->quantity_range }}
+                                                    {{ $promotion->label ?? 'Buy' }} {{ $promotion->quantity_range }}
                                                 </div>
                                                 <div class="text-right">
-                                                    <div class="text-3xl font-bold text-white">{{ number_format($promotion->price, 2) }} <span class="text-base text-white/80">MAD</span></div>
+                                                    <div class="text-3xl font-bold text-white">{{ number_format($promotion->price, 2) }} <span class="text-base text-white/80">DHS</span></div>
                                                     @if($promotion->discount_percentage > 0)
                                                     <div class="inline-block text-xs bg-yellow-400 text-purple-900 px-3 py-1 rounded-full font-bold mt-1">
                                                         -{{ $promotion->discount_percentage }}%
@@ -193,9 +193,9 @@
                                                     @endif
                                                 </div>
                                                 <div class="text-right">
-                                                    <div class="text-xl font-bold text-white">{{ number_format($variation->price, 2) }} MAD</div>
+                                                    <div class="text-xl font-bold text-white">{{ number_format($variation->price, 2) }} DHS</div>
                                                     @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                                    <div class="text-sm line-through text-white/70">{{ number_format($variation->compare_at_price, 2) }} MAD</div>
+                                                    <div class="text-sm line-through text-white/70">{{ number_format($variation->compare_at_price, 2) }} DHS</div>
                                                     @endif
                                                 </div>
                                             </div>
@@ -315,9 +315,9 @@
                                     {{ $product->price_range }}
                                 </div>
                             @else
-                                <div class="text-4xl font-bold text-purple-600">{{ number_format($product->price, 2) }} MAD</div>
+                                <div class="text-4xl font-bold text-purple-600">{{ number_format($product->price, 2) }} DHS</div>
                                 @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                <div class="text-lg line-through text-gray-500">{{ number_format($product->compare_at_price, 2) }} MAD</div>
+                                <div class="text-lg line-through text-gray-500">{{ number_format($product->compare_at_price, 2) }} DHS</div>
                                 @endif
                             @endif
                         </div>
@@ -356,10 +356,10 @@
                                     <div class="flex-1">
                                         <div class="flex items-center justify-between flex-wrap gap-3">
                                             <div class="text-lg font-semibold text-yellow-700">
-                                                Buy {{ $promotion->quantity_range }}
+                                                {{ $promotion->label ?? 'Buy' }} {{ $promotion->quantity_range }}
                                             </div>
                                             <div class="text-right">
-                                                <div class="text-3xl font-bold text-gray-800">{{ number_format($promotion->price, 2) }} <span class="text-base text-gray-600">MAD</span></div>
+                                                <div class="text-3xl font-bold text-gray-800">{{ number_format($promotion->price, 2) }} <span class="text-base text-gray-600">DHS</span></div>
                                                 @if($promotion->discount_percentage > 0)
                                                 <div class="inline-block text-xs bg-yellow-500 text-white px-3 py-1 rounded-full font-bold mt-1">
                                                     -{{ $promotion->discount_percentage }}%
@@ -418,9 +418,9 @@
                                                 @endif
                                             </div>
                                             <div class="text-right">
-                                                <div class="text-xl font-bold text-purple-600">{{ number_format($variation->price, 2) }} MAD</div>
+                                                <div class="text-xl font-bold text-purple-600">{{ number_format($variation->price, 2) }} DHS</div>
                                                 @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                                <div class="text-sm line-through text-gray-500">{{ number_format($variation->compare_at_price, 2) }} MAD</div>
+                                                <div class="text-sm line-through text-gray-500">{{ number_format($variation->compare_at_price, 2) }} DHS</div>
                                                 @endif
                                             </div>
                                         </div>
@@ -514,9 +514,9 @@
                         <div class="p-6">
                             <h3 class="font-bold text-xl mb-2 text-gray-900 group-hover:text-purple-600 transition">{{ $related->name }}</h3>
                             <div class="flex items-center gap-3">
-                                <span class="text-2xl font-bold text-purple-600">{{ number_format($related->price, 2) }} MAD</span>
+                                <span class="text-2xl font-bold text-purple-600">{{ number_format($related->price, 2) }} DHS</span>
                                 @if($related->compare_at_price)
-                                <span class="text-sm line-through text-gray-500">{{ number_format($related->compare_at_price, 2) }} MAD</span>
+                                <span class="text-sm line-through text-gray-500">{{ number_format($related->compare_at_price, 2) }} DHS</span>
                                 @endif
                             </div>
                         </div>
@@ -557,10 +557,10 @@
             // Update price display
             const priceContainer = document.getElementById('variationPrice');
             if (priceContainer) {
-                let priceHtml = `<div class="text-4xl font-bold text-purple-600">${price.toFixed(2)} MAD</div>`;
+                let priceHtml = `<div class="text-4xl font-bold text-purple-600">${price.toFixed(2)} DHS</div>`;
                 
                 if (comparePrice > price) {
-                    priceHtml += `<div class="text-lg line-through text-gray-500">${comparePrice.toFixed(2)} MAD</div>`;
+                    priceHtml += `<div class="text-lg line-through text-gray-500">${comparePrice.toFixed(2)} DHS</div>`;
                 }
                 
                 priceContainer.innerHTML = priceHtml;
@@ -587,10 +587,10 @@
             // Update price display in hero section
             const priceContainer = document.getElementById('variationPriceHero');
             if (priceContainer) {
-                let priceHtml = `<div class="text-5xl font-bold">${price.toFixed(2)} MAD</div>`;
+                let priceHtml = `<div class="text-5xl font-bold">${price.toFixed(2)} DHS</div>`;
                 
                 if (comparePrice > price) {
-                    priceHtml += `<div class="text-lg line-through text-white/70">${comparePrice.toFixed(2)} MAD</div>`;
+                    priceHtml += `<div class="text-lg line-through text-white/70">${comparePrice.toFixed(2)} DHS</div>`;
                 }
                 
                 priceContainer.innerHTML = priceHtml;

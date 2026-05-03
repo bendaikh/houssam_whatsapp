@@ -12,9 +12,14 @@ class ProductLead extends Model
         'name',
         'phone',
         'note',
+        'custom_fields',
         'language',
         'ip_address',
         'user_agent',
+    ];
+
+    protected $casts = [
+        'custom_fields' => 'array',
     ];
 
     public function product()

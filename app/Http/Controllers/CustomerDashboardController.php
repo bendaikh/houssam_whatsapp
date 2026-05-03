@@ -396,6 +396,7 @@ class CustomerDashboardController extends Controller
             'variations.*.is_default' => 'nullable|boolean',
             'variations.*.is_active' => 'nullable|boolean',
             'promotions' => 'nullable|array',
+            'promotions.*.label' => 'nullable|string|max:255',
             'promotions.*.min_quantity' => 'required_with:promotions|integer|min:1',
             'promotions.*.max_quantity' => 'nullable|integer|min:1',
             'promotions.*.price' => 'required_with:promotions|numeric|min:0',
@@ -534,6 +535,7 @@ class CustomerDashboardController extends Controller
             foreach ($request->input('promotions', []) as $promotionData) {
                 \App\Models\ProductPromotion::create([
                     'product_id' => $product->id,
+                    'label' => $promotionData['label'] ?? null,
                     'min_quantity' => $promotionData['min_quantity'],
                     'max_quantity' => $promotionData['max_quantity'] ?? null,
                     'price' => $promotionData['price'],
@@ -649,6 +651,7 @@ class CustomerDashboardController extends Controller
             'variations.*.is_active' => 'nullable|boolean',
             'promotions' => 'nullable|array',
             'promotions.*.id' => 'nullable|exists:product_promotions,id',
+            'promotions.*.label' => 'nullable|string|max:255',
             'promotions.*.min_quantity' => 'required_with:promotions|integer|min:1',
             'promotions.*.max_quantity' => 'nullable|integer|min:1',
             'promotions.*.price' => 'required_with:promotions|numeric|min:0',
@@ -709,6 +712,42 @@ class CustomerDashboardController extends Controller
             }
             
             $validated['landing_page_sections'] = $landingSections;
+        }
+        
+        // Handle form fields configuration
+        if ($request->has('form_fields')) {
+            $formFieldsJson = $request->input('form_fields');
+            $formFields = json_decode($formFieldsJson, true);
+            
+            // Validate and clean the form fields
+            if (is_array($formFields)) {
+                $cleanedFields = [];
+                foreach ($formFields as $field) {
+                    // Ensure required properties exist
+                    if (!empty($field['id'])) {
+                        $cleanedField = [
+                            'id' => $field['id'],
+                            'type' => $field['type'] ?? 'text',
+                            'label' => $field['label'] ?? '',
+                            'label_fr' => $field['label_fr'] ?? '',
+                            'label_en' => $field['label_en'] ?? '',
+                            'label_ar' => $field['label_ar'] ?? '',
+                            'placeholder_fr' => $field['placeholder_fr'] ?? '',
+                            'placeholder_en' => $field['placeholder_en'] ?? '',
+                            'placeholder_ar' => $field['placeholder_ar'] ?? '',
+                            'required' => !empty($field['required']),
+                        ];
+                        
+                        // Add options for select type
+                        if ($cleanedField['type'] === 'select' && !empty($field['options'])) {
+                            $cleanedField['options'] = $field['options'];
+                        }
+                        
+                        $cleanedFields[] = $cleanedField;
+                    }
+                }
+                $validated['form_fields'] = $cleanedFields;
+            }
         }
         
         if ($request->has('delete_images')) {
@@ -795,6 +834,7 @@ class CustomerDashboardController extends Controller
                 foreach ($request->input('promotions', []) as $promotionData) {
                     $promotionParams = [
                         'product_id' => $product->id,
+                        'label' => $promotionData['label'] ?? null,
                         'min_quantity' => $promotionData['min_quantity'],
                         'max_quantity' => $promotionData['max_quantity'] ?? null,
                         'price' => $promotionData['price'],

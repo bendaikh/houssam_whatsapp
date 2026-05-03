@@ -91,7 +91,7 @@
                     <!-- Price and Compare Price -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Price (MAD) *</label>
+                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Price (DHS) *</label>
                             <input 
                                 type="number" 
                                 id="price" 
@@ -109,7 +109,7 @@
                         </div>
 
                         <div>
-                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Compare at Price (MAD)</label>
+                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Compare at Price (DHS)</label>
                             <input 
                                 type="number" 
                                 id="compare_at_price" 
@@ -287,7 +287,7 @@
                                 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-300 mb-1">Price (MAD) *</label>
+                                        <label class="block text-xs font-medium text-gray-300 mb-1">Price (DHS) *</label>
                                         <input 
                                             type="number" 
                                             name="variations[{{ $loop->index }}][price]" 
@@ -432,7 +432,7 @@
                                 <p class="font-semibold mb-1">How it works:</p>
                                 <ul class="list-disc list-inside space-y-1 text-xs">
                                     <li>Set different prices based on quantity purchased</li>
-                                    <li>Example: Buy 1 for 100 MAD, Buy 2 for 90 MAD each, Buy 3+ for 80 MAD each</li>
+                                    <li>Example: Buy 1 for 100 DHS, Buy 2 for 90 DHS each, Buy 3+ for 80 DHS each</li>
                                     <li>Promotions apply automatically at checkout</li>
                                 </ul>
                             </div>
@@ -467,6 +467,18 @@
                                 </svg>
                             </button>
                             
+                            <div class="mb-3">
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Promotion Label</label>
+                                <input 
+                                    type="text" 
+                                    name="promotions[{{ $loop->index }}][label]" 
+                                    value="{{ $promotion->label }}"
+                                    placeholder="e.g., Shop Now, Buy Now, Order Now (leave empty for default)"
+                                    class="w-full px-3 py-2 text-sm bg-[#0f1c2e] border border-white/10 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                />
+                                <p class="text-xs text-gray-400 mt-1">This will replace "Buy" or "اشتري" in your landing page</p>
+                            </div>
+                            
                             <div class="grid grid-cols-3 gap-3 mb-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-300 mb-1">Min Quantity *</label>
@@ -493,7 +505,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (MAD) *</label>
+                                    <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (DHS) *</label>
                                     <input 
                                         type="number" 
                                         name="promotions[{{ $loop->index }}][price]" 
@@ -507,7 +519,7 @@
                             </div>
                             
                             <div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-2 text-xs text-yellow-300">
-                                <strong>Current:</strong> Min: {{ $promotion->min_quantity }}, Max: {{ $promotion->max_quantity ?? 'unlimited' }}, Price: {{ number_format($promotion->price, 2) }} MAD
+                                <strong>Current:</strong> Min: {{ $promotion->min_quantity }}, Max: {{ $promotion->max_quantity ?? 'unlimited' }}, Price: {{ number_format($promotion->price, 2) }} DHS
                             </div>
                         </div>
                         @endforeach
@@ -519,7 +531,7 @@
                         </svg>
                         <p class="text-yellow-300 font-semibold mb-1">⚠️ No pricing tiers added yet!</p>
                         <p class="text-gray-400 text-sm">Click <strong class="text-yellow-400">"Add Tier"</strong> above to create quantity-based pricing</p>
-                        <p class="text-xs mt-2 text-gray-500">Example: Buy 2+ items → Pay 90 MAD each instead of 100 MAD</p>
+                        <p class="text-xs mt-2 text-gray-500">Example: Buy 2+ items → Pay 90 DHS each instead of 100 DHS</p>
                     </div>
                     
                     <!-- Hidden field to ensure promotions data is always captured -->
@@ -694,6 +706,158 @@
                 </div>
             </div>
 
+            <!-- Landing Page Form Fields Card -->
+            <div class="bg-[#0f1c2e] border border-white/10 rounded-xl p-6" x-data="formFieldsManager">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Landing Page Form Fields</h3>
+                        <p class="text-sm text-gray-400 mt-1">Customize the contact form fields on your landing page</p>
+                    </div>
+                    <button 
+                        type="button"
+                        @click="addField()"
+                        class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Field
+                    </button>
+                </div>
+
+                <div class="space-y-4 mb-4">
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-blue-300 text-sm">
+                        <strong>Note:</strong> Name and Phone fields are always required and cannot be removed. The Note field is optional by default.
+                    </div>
+                </div>
+
+                <input type="hidden" name="form_fields" x-model="formFieldsJson">
+
+                <template x-if="fields.length === 0">
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>No custom form fields added yet</p>
+                        <p class="text-sm mt-1">Click "Add Field" to create custom fields for your landing page form</p>
+                    </div>
+                </template>
+
+                <div class="space-y-4">
+                    <template x-for="(field, index) in fields" :key="field.id">
+                        <div class="bg-[#0a1628] border border-white/10 rounded-lg p-4">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                    </svg>
+                                    <h4 class="font-semibold text-white" x-text="'Field ' + (index + 1)"></h4>
+                                </div>
+                                <button 
+                                    type="button"
+                                    @click="removeField(index)"
+                                    class="text-red-400 hover:text-red-300 transition"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Field Type -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Field Type</label>
+                                    <select 
+                                        x-model="field.type"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    >
+                                        <option value="text">Text</option>
+                                        <option value="email">Email</option>
+                                        <option value="tel">Phone</option>
+                                        <option value="number">Number</option>
+                                        <option value="textarea">Textarea</option>
+                                        <option value="select">Dropdown</option>
+                                    </select>
+                                </div>
+
+                                <!-- Required -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Required</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            x-model="field.required"
+                                            class="sr-only peer"
+                                        />
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                        <span class="ml-3 text-sm text-gray-300">Required field</span>
+                                    </label>
+                                </div>
+
+                                <!-- Label FR -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Label (FR)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.label_fr"
+                                        placeholder="e.g., Adresse"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Label EN -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Label (EN)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.label_en"
+                                        placeholder="e.g., Address"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Label AR -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Label (AR)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.label_ar"
+                                        placeholder="e.g., العنوان"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Placeholder FR -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Placeholder (FR)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.placeholder_fr"
+                                        placeholder="e.g., Entrez votre adresse"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Options for select -->
+                                <template x-if="field.type === 'select'">
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-300 mb-2">Options (comma-separated)</label>
+                                        <input 
+                                            type="text" 
+                                            x-model="field.options_text"
+                                            @input="field.options = field.options_text.split(',').map(o => o.trim()).filter(o => o)"
+                                            placeholder="e.g., Casablanca, Rabat, Marrakech"
+                                            class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        />
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
             <!-- Submit Buttons -->
             <div class="flex justify-end gap-4">
                 <a href="{{ route('app.products') }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition">
@@ -747,6 +911,17 @@
                     </svg>
                 </button>
                 
+                <div class="mb-3">
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Promotion Label</label>
+                    <input 
+                        type="text" 
+                        name="promotions[${promotionId}][label]" 
+                        placeholder="e.g., Shop Now, Buy Now, Order Now (leave empty for default)"
+                        class="w-full px-3 py-2 text-sm bg-[#0f1c2e] border border-white/10 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    />
+                    <p class="text-xs text-gray-400 mt-1">This will replace "Buy" or "اشتري" in your landing page</p>
+                </div>
+                
                 <div class="grid grid-cols-3 gap-3 mb-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-300 mb-1">Min Quantity *</label>
@@ -772,9 +947,9 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (MAD) *</label>
-                        <input 
-                            type="number" 
+                        <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (DHS) *</label>
+                        <input
+                            type="number"
                             name="promotions[${promotionId}][price]" 
                             step="0.01"
                             min="0"
@@ -786,7 +961,7 @@
                 </div>
                 
                 <div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-2 text-xs text-yellow-300">
-                    <strong>Example:</strong> Min: 2, Max: 4, Price: 90.00 → Customers buying 2-4 items pay 90 MAD per item
+                    <strong>Example:</strong> Min: 2, Max: 4, Price: 90.00 → Customers buying 2-4 items pay 90 DHS per item
                 </div>
             `;
             
@@ -887,7 +1062,7 @@
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-300 mb-1">Price (MAD) *</label>
+                            <label class="block text-xs font-medium text-gray-300 mb-1">Price (DHS) *</label>
                             <input 
                                 type="number" 
                                 name="variations[${variationId}][price]" 
@@ -1363,6 +1538,50 @@
                     descriptionTextarea.value = quill.root.innerHTML;
                 });
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('formFieldsManager', () => ({
+                fields: @json($product->form_fields ?? []),
+                
+                init() {
+                    // Ensure each field has an options_text property for select fields
+                    this.fields = this.fields.map(field => {
+                        if (field.type === 'select' && field.options) {
+                            field.options_text = field.options.join(', ');
+                        }
+                        return field;
+                    });
+                },
+                
+                get formFieldsJson() {
+                    return JSON.stringify(this.fields);
+                },
+                
+                addField() {
+                    this.fields.push({
+                        id: 'field_' + Date.now(),
+                        type: 'text',
+                        label_fr: '',
+                        label_en: '',
+                        label_ar: '',
+                        placeholder_fr: '',
+                        placeholder_en: '',
+                        placeholder_ar: '',
+                        required: false,
+                        options: [],
+                        options_text: ''
+                    });
+                },
+                
+                removeField(index) {
+                    if (confirm('Are you sure you want to remove this field?')) {
+                        this.fields.splice(index, 1);
+                    }
+                }
+            }));
         });
     </script>
 @endsection

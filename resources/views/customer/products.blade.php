@@ -80,9 +80,9 @@
                                     <span class="text-sm text-gray-300">{{ $product->category->name ?? 'Uncategorized' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-white">{{ number_format($product->price, 2) }} MAD</div>
+                                    <div class="text-sm font-medium text-white">{{ number_format($product->price, 2) }} DHS</div>
                                     @if($product->compare_at_price)
-                                        <div class="text-xs text-gray-400 line-through">{{ number_format($product->compare_at_price, 2) }} MAD</div>
+                                        <div class="text-xs text-gray-400 line-through">{{ number_format($product->compare_at_price, 2) }} DHS</div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -137,7 +137,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($product->landing_page_status === 'completed' && $product->landing_page_hero_title)
+                                    @if($product->landing_page_status === 'completed' && ($product->landing_page_hero_description || $product->landing_page_ar))
                                         <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-400 border border-purple-500/30">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>

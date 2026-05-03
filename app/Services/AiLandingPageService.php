@@ -19,7 +19,7 @@ class AiLandingPageService
         $this->aiSetting = AiApiSetting::where('user_id', $user->id)->first();
     }
 
-    public function generateLandingPage(Product $product, array $languages = ['fr', 'en', 'ar'])
+    public function generateLandingPage(Product $product, array $languages = ['ar'])
     {
         if (!$this->aiSetting) {
             throw new \Exception('AI API settings not configured. Please configure your AI settings first.');
@@ -83,14 +83,13 @@ Create compelling landing page content for the following product:
 
 Product Name: {$product->name}
 Category: {$categoryName}
-Price: {$product->price} MAD
-" . ($product->compare_at_price ? "Original Price: {$product->compare_at_price} MAD\n" : "") . "
+Price: {$product->price} DHS
+" . ($product->compare_at_price ? "Original Price: {$product->compare_at_price} DHS\n" : "") . "
 Description: {$product->description}
 
 Generate a professional, conversion-optimized landing page in JSON format with these fields:
 
 {
-    \"hero_title\": \"Write a catchy headline about the product (max 60 characters)\",
     \"hero_description\": \"Write 2-3 compelling sentences highlighting the main benefits\",
     \"features\": [
         {\"title\": \"Feature name\", \"description\": \"Why this feature matters\", \"icon\": \"✓\"},
@@ -239,7 +238,7 @@ Other requirements:
                 throw new \Exception('Invalid JSON response from AI: ' . json_last_error_msg());
             }
 
-            if (!isset($data['hero_title']) || !isset($data['features']) || !isset($data['full_description'])) {
+            if (!isset($data['features']) || !isset($data['full_description'])) {
                 throw new \Exception('AI response missing required fields.');
             }
 
@@ -254,24 +253,15 @@ Other requirements:
     {
         $updateData = [];
 
-        // Save multi-language data
-        if (isset($landingPageData['fr'])) {
-            $updateData['landing_page_fr'] = $landingPageData['fr'];
-        }
-        if (isset($landingPageData['en'])) {
-            $updateData['landing_page_en'] = $landingPageData['en'];
-        }
+        // Save Arabic as the only language
         if (isset($landingPageData['ar'])) {
             $updateData['landing_page_ar'] = $landingPageData['ar'];
-        }
-
-        // Keep backward compatibility - save French as default
-        if (isset($landingPageData['fr'])) {
-            $updateData['landing_page_hero_title'] = $landingPageData['fr']['hero_title'] ?? null;
-            $updateData['landing_page_hero_description'] = $landingPageData['fr']['hero_description'] ?? null;
-            $updateData['landing_page_features'] = $landingPageData['fr']['features'] ?? [];
-            $updateData['landing_page_cta'] = $landingPageData['fr']['cta'] ?? null;
-            $updateData['landing_page_content'] = $landingPageData['fr']['full_description'] ?? null;
+            
+            // Save Arabic as default (no hero_title - use product name instead)
+            $updateData['landing_page_hero_description'] = $landingPageData['ar']['hero_description'] ?? null;
+            $updateData['landing_page_features'] = $landingPageData['ar']['features'] ?? [];
+            $updateData['landing_page_cta'] = $landingPageData['ar']['cta'] ?? null;
+            $updateData['landing_page_content'] = $landingPageData['ar']['full_description'] ?? null;
         }
 
         // Generate landing page sections from product images (excluding the first/main image)
@@ -299,10 +289,7 @@ Other requirements:
             return [];
         }
 
-        // Get AI-generated image sections if available from landing page data
-        // Check both top-level and language-nested data
-        $imageSectionsFr = $landingPageData['fr']['image_sections'] ?? $landingPageData['image_sections'] ?? null;
-        $imageSectionsEn = $landingPageData['en']['image_sections'] ?? $landingPageData['image_sections'] ?? null;
+        // Get AI-generated image sections from Arabic data only
         $imageSectionsAr = $landingPageData['ar']['image_sections'] ?? $landingPageData['image_sections'] ?? null;
 
         $sections = [];
@@ -313,18 +300,14 @@ Other requirements:
         foreach ($sectionImages as $index => $imagePath) {
             $section = [
                 'image' => $imagePath,
-                'title_fr' => $imageSectionsFr[$index]['title'] ?? '',
-                'description_fr' => $imageSectionsFr[$index]['description'] ?? '',
-                'title_en' => $imageSectionsEn[$index]['title'] ?? $imageSectionsFr[$index]['title'] ?? '',
-                'description_en' => $imageSectionsEn[$index]['description'] ?? $imageSectionsFr[$index]['description'] ?? '',
-                'title_ar' => $imageSectionsAr[$index]['title'] ?? $imageSectionsFr[$index]['title'] ?? '',
-                'description_ar' => $imageSectionsAr[$index]['description'] ?? $imageSectionsFr[$index]['description'] ?? '',
+                'title_ar' => $imageSectionsAr[$index]['title'] ?? '',
+                'description_ar' => $imageSectionsAr[$index]['description'] ?? '',
             ];
             
             // If AI didn't provide enough sections, use generic ones based on product info
-            if (empty($section['title_fr'])) {
-                $section['title_fr'] = "Détail du produit " . ($index + 1);
-                $section['description_fr'] = "Découvrez la qualité exceptionnelle de notre " . $product->name . ".";
+            if (empty($section['title_ar'])) {
+                $section['title_ar'] = "تفاصيل المنتج " . ($index + 1);
+                $section['description_ar'] = "اكتشف الجودة الاستثنائية لمنتجنا " . $product->name . ".";
             }
             
             $sections[] = $section;
@@ -336,7 +319,7 @@ Other requirements:
     /**
      * Generate image section descriptions using AI
      */
-    public function generateImageSections(Product $product, array $languages = ['fr', 'en', 'ar']): array
+    public function generateImageSections(Product $product, array $languages = ['ar']): array
     {
         if (!$this->aiSetting) {
             throw new \Exception('AI API settings not configured.');

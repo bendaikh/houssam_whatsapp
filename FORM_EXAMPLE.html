@@ -1,0 +1,40 @@
+<!-- Example: How the form looks with custom fields -->
+
+<!-- DEFAULT FORM (before customization) -->
+<form>
+    <input name="name" placeholder="Your name" required />
+    <input name="phone" placeholder="Your phone" required />
+    <textarea name="note" placeholder="Note (optional)"></textarea>
+    <button>Send</button>
+</form>
+
+<!-- CUSTOMIZED FORM (after adding Address and City fields) -->
+<form>
+    <input name="name" placeholder="Your name" required />
+    <input name="phone" placeholder="Your phone" required />
+    
+    <!-- NEW: Address field (custom) -->
+    <input name="custom_address" placeholder="Enter your address" required />
+    
+    <!-- NEW: City dropdown (custom) -->
+    <select name="custom_city" required>
+        <option value="">Select city...</option>
+        <option value="Casablanca">Casablanca</option>
+        <option value="Rabat">Rabat</option>
+        <option value="Marrakech">Marrakech</option>
+    </select>
+    
+    <textarea name="note" placeholder="Note (optional)"></textarea>
+    <button>Send</button>
+</form>
+
+<!-- EXAMPLE DATA STRUCTURE when submitted -->
+{
+    "name": "Ahmed Hassan",
+    "phone": "0612345678",
+    "note": "Please call before delivery",
+    "custom_fields": {
+        "address": "123 Rue Mohammed V",
+        "city": "Casablanca"
+    }
+}

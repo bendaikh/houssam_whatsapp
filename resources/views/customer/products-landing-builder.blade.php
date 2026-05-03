@@ -103,15 +103,10 @@
                     Hero Section
                 </h2>
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <span x-text="'Hero Title (' + currentLang.toUpperCase() + ')'"></span>
-                        </label>
-                        <input type="text" 
-                               x-bind:value="(pageData[currentLang] && pageData[currentLang].hero_title) || ''"
-                               x-on:input="if (!pageData[currentLang]) pageData[currentLang] = {}; pageData[currentLang].hero_title = $event.target.value"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 font-bold text-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Enter hero title">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-800">
+                            <strong>Note:</strong> The title will use your product name automatically. Edit the product name in the main product details if you want to change the title.
+                        </p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">

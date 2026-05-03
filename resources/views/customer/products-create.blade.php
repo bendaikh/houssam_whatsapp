@@ -179,7 +179,7 @@
                     <!-- Price and Compare Price -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Price (MAD) *</label>
+                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Price (DHS) *</label>
                             <input 
                                 type="number" 
                                 id="price" 
@@ -197,7 +197,7 @@
                         </div>
 
                         <div>
-                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Compare at Price (MAD)</label>
+                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Compare at Price (DHS)</label>
                             <input 
                                 type="number" 
                                 id="compare_at_price" 
@@ -364,7 +364,7 @@
                                 <p class="font-semibold mb-1">How it works:</p>
                                 <ul class="list-disc list-inside space-y-1 text-xs">
                                     <li>Set different prices based on quantity purchased</li>
-                                    <li>Example: Buy 1 for 100 MAD, Buy 2 for 90 MAD each, Buy 3+ for 80 MAD each</li>
+                                    <li>Example: Buy 1 for 100 DHS, Buy 2 for 90 DHS each, Buy 3+ for 80 DHS each</li>
                                     <li>Promotions apply automatically at checkout</li>
                                 </ul>
                             </div>
@@ -398,7 +398,7 @@
                         </svg>
                         <p class="text-yellow-300 font-semibold mb-1">⚠️ No pricing tiers added yet!</p>
                         <p class="text-gray-400 text-sm">Click <strong class="text-yellow-400">"Add Tier"</strong> above to create quantity-based pricing</p>
-                        <p class="text-xs mt-2 text-gray-500">Example: Buy 2+ items → Pay 90 MAD each instead of 100 MAD</p>
+                        <p class="text-xs mt-2 text-gray-500">Example: Buy 2+ items → Pay 90 DHS each instead of 100 DHS</p>
                     </div>
                 </div>
             </div>
@@ -609,6 +609,18 @@
                     </svg>
                 </button>
                 
+                <div class="mb-3">
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Promotion Label</label>
+                    <input 
+                        type="text" 
+                        name="promotions[${promotionId}][label]" 
+                        placeholder="e.g., Shop Now, Buy Now, Order Now (leave empty for default)"
+                        class="w-full px-3 py-2 text-sm bg-[#0f1c2e] border border-white/10 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        oninput="updatePromotionsJson()"
+                    />
+                    <p class="text-xs text-gray-400 mt-1">This will replace "Buy" or "اشتري" in your landing page</p>
+                </div>
+                
                 <div class="grid grid-cols-3 gap-3 mb-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-300 mb-1">Min Quantity *</label>
@@ -636,7 +648,7 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (MAD) *</label>
+                        <label class="block text-xs font-medium text-gray-300 mb-1">Price per Unit (DHS) *</label>
                         <input 
                             type="number" 
                             name="promotions[${promotionId}][price]" 
@@ -651,7 +663,7 @@
                 </div>
                 
                 <div class="bg-yellow-500/10 border border-yellow-500/20 rounded p-2 text-xs text-yellow-300">
-                    <strong>Example:</strong> Min: 2, Max: 4, Price: 90.00 → Customers buying 2-4 items pay 90 MAD per item
+                    <strong>Example:</strong> Min: 2, Max: 4, Price: 90.00 → Customers buying 2-4 items pay 90 DHS per item
                 </div>
             `;
             
@@ -757,7 +769,7 @@
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-300 mb-1">Price (MAD) *</label>
+                            <label class="block text-xs font-medium text-gray-300 mb-1">Price (DHS) *</label>
                             <input 
                                 type="number" 
                                 name="variations[${variationId}][price]" 

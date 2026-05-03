@@ -27,7 +27,7 @@
             content_ids: ['{{ $product->id }}'],
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'MAD'
+            currency: 'DHS'
         });
     </script>
     <noscript>
@@ -48,7 +48,7 @@
             content_id: '{{ $product->id }}',
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'MAD'
+            currency: 'DHS'
           });
         }(window, document, 'ttq');
     </script>
@@ -195,10 +195,9 @@
                 <!-- Left Side: Title + Image (STICKY - stays when scrolling) -->
                 <div class="lg:sticky lg:top-8 self-start space-y-8">
                     <!-- Title Only -->
-                    <div class="text-white" x-cloak>
-                        <h1 class="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight drop-shadow-lg" 
-                            x-text="pageData[currentLang]?.hero_title || productName">
-                            {{ $product->landing_page_hero_title ?? $product->name }}
+                    <div class="text-white">
+                        <h1 class="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight drop-shadow-lg">
+                            {{ $product->name }}
                         </h1>
                     </div>
 
@@ -223,9 +222,9 @@
                             </div>
                         @else
                             <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
-                                <div class="text-4xl font-black text-white">{{ number_format($product->price, 2) }} <span class="text-xl">MAD</span></div>
+                                <div class="text-4xl font-black text-white">{{ number_format($product->price, 2) }} <span class="text-xl">DHS</span></div>
                                 @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                <div class="text-sm line-through text-white/70">{{ number_format($product->compare_at_price, 2) }} MAD</div>
+                                <div class="text-sm line-through text-white/70">{{ number_format($product->compare_at_price, 2) }} DHS</div>
                                 @endif
                             </div>
                             @if($product->discount_percentage)
@@ -262,11 +261,15 @@
                                            onchange="updatePromotionDisplayForm(this)">
                                     <div class="flex-1 flex items-center justify-between">
                                         <div class="font-semibold text-yellow-200">
-                                            <span x-text="currentLang === 'ar' ? 'اشتري' : (currentLang === 'en' ? 'Buy' : 'Achetez')">Achetez</span>
+                                            @if($promotion->label)
+                                                {{ $promotion->label }}
+                                            @else
+                                                <span x-text="currentLang === 'ar' ? 'اشتري' : (currentLang === 'en' ? 'Buy' : 'Achetez')">Achetez</span>
+                                            @endif
                                             {{ $promotion->quantity_range }}
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <span class="text-2xl font-black text-white">{{ number_format($promotion->price, 2) }} MAD</span>
+                                            <span class="text-2xl font-black text-white">{{ number_format($promotion->price, 2) }} DHS</span>
                                             @if($promotion->discount_percentage > 0)
                                             <span class="text-xs bg-yellow-400 text-blue-900 px-2 py-1 rounded-full font-bold">
                                                 -{{ $promotion->discount_percentage }}%
@@ -324,9 +327,9 @@
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-2xl font-black text-white">{{ number_format($variation->price, 2) }} MAD</div>
+                                            <div class="text-2xl font-black text-white">{{ number_format($variation->price, 2) }} DHS</div>
                                             @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                            <div class="text-xs line-through text-white/70">{{ number_format($variation->compare_at_price, 2) }} MAD</div>
+                                            <div class="text-xs line-through text-white/70">{{ number_format($variation->compare_at_price, 2) }} DHS</div>
                                             @endif
                                         </div>
                                     </div>
@@ -352,7 +355,7 @@
                                     content_ids: ['{{ $product->id }}'],
                                     content_type: 'product',
                                     value: {{ $product->price }},
-                                    currency: 'MAD'
+                                    currency: 'DHS'
                                 });
                             </script>
                             @endif
@@ -365,7 +368,7 @@
                                     content_id: '{{ $product->id }}',
                                     content_type: 'product',
                                     value: {{ $product->price }},
-                                    currency: 'MAD'
+                                    currency: 'DHS'
                                 });
                             </script>
                             @endif
@@ -406,6 +409,65 @@
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            @if(!empty($product->form_fields))
+                                @foreach($product->form_fields as $customField)
+                                    <div>
+                                        <label class="block text-gray-900 font-bold mb-2">
+                                            <span x-text="{{ json_encode([
+                                                'fr' => $customField['label_fr'] ?? $customField['label'] ?? 'Field',
+                                                'en' => $customField['label_en'] ?? $customField['label'] ?? 'Field',
+                                                'ar' => $customField['label_ar'] ?? $customField['label'] ?? 'Field'
+                                            ]) }}[currentLang]">
+                                                {{ $customField['label_fr'] ?? $customField['label'] ?? 'Field' }}
+                                            </span>
+                                            @if($customField['required'] ?? false)
+                                                <span class="text-red-500">*</span>
+                                            @endif
+                                        </label>
+                                        
+                                        @if($customField['type'] === 'textarea')
+                                            <textarea 
+                                                name="custom_{{ $customField['id'] }}" 
+                                                rows="3"
+                                                {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                                :placeholder="{{ json_encode([
+                                                    'fr' => $customField['placeholder_fr'] ?? $customField['placeholder'] ?? '',
+                                                    'en' => $customField['placeholder_en'] ?? $customField['placeholder'] ?? '',
+                                                    'ar' => $customField['placeholder_ar'] ?? $customField['placeholder'] ?? ''
+                                                ]) }}[currentLang]"
+                                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"></textarea>
+                                        @elseif($customField['type'] === 'select')
+                                            <select 
+                                                name="custom_{{ $customField['id'] }}"
+                                                {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all">
+                                                <option value="">{{ $customField['placeholder_fr'] ?? $customField['placeholder'] ?? 'Sélectionner...' }}</option>
+                                                @if(!empty($customField['options']))
+                                                    @foreach($customField['options'] as $option)
+                                                        <option value="{{ $option }}">{{ $option }}</option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                        @else
+                                            <input 
+                                                type="{{ $customField['type'] ?? 'text' }}" 
+                                                name="custom_{{ $customField['id'] }}" 
+                                                {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                                :placeholder="{{ json_encode([
+                                                    'fr' => $customField['placeholder_fr'] ?? $customField['placeholder'] ?? '',
+                                                    'en' => $customField['placeholder_en'] ?? $customField['placeholder'] ?? '',
+                                                    'ar' => $customField['placeholder_ar'] ?? $customField['placeholder'] ?? ''
+                                                ]) }}[currentLang]"
+                                                class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all">
+                                        @endif
+                                        
+                                        @error('custom_' . $customField['id'])
+                                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endforeach
+                            @endif
 
                             <div>
                                 <label class="block text-gray-900 font-bold mb-2" x-text="pageData[currentLang]?.form_note_placeholder || 'Note (optionnel)'">
@@ -831,7 +893,7 @@
             // Update price display in form
             const priceContainer = document.getElementById('variationPriceForm');
             if (priceContainer) {
-                let priceHtml = price.toFixed(2) + ' <span class="text-xl">MAD</span>';
+                let priceHtml = price.toFixed(2) + ' <span class="text-xl">DHS</span>';
                 priceContainer.innerHTML = priceHtml;
             }
         }
@@ -847,23 +909,26 @@
     @endif
 
 
-    <!-- Sticky Order Button -->
+    <!-- Sticky Order Button - Full Width Bottom Bar -->
     <button onclick="document.getElementById('order-form').scrollIntoView({behavior: 'smooth', block: 'center'})" 
-            class="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-lg px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 flex items-center gap-3 group"
-            style="animation: gentle-bounce 2s ease-in-out infinite;"
+            class="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xl px-6 py-5 shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center gap-3 group"
+            style="animation: gentle-pulse 2s ease-in-out infinite;"
             x-cloak>
-        <svg class="w-6 h-6 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-7 h-7 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
         </svg>
-        <span x-show="currentLang === 'fr'">Commander</span>
+        <span x-show="currentLang === 'fr'">Commander Maintenant</span>
         <span x-show="currentLang === 'en'">Order Now</span>
         <span x-show="currentLang === 'ar'">اطلب الآن</span>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
     </button>
 
     <style>
-        @keyframes gentle-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.95; }
         }
         .fixed button:hover {
             animation: none !important;
@@ -871,7 +936,7 @@
     </style>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8">
+    <footer class="bg-gray-900 text-white py-8 pb-24">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p class="text-lg">&copy; {{ date('Y') }} {{ config('app.name') }}. 
                 <span x-show="currentLang === 'fr'">Tous droits réservés.</span>

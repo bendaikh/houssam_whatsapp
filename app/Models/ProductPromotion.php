@@ -9,6 +9,7 @@ class ProductPromotion extends Model
     protected $fillable = [
         'product_id',
         'product_variation_id',
+        'label',
         'min_quantity',
         'max_quantity',
         'price',

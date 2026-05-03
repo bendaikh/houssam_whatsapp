@@ -42,7 +42,8 @@ class Product extends Model
         'landing_page_en',
         'landing_page_ar',
         'landing_page_status',
-        'landing_page_sections'
+        'landing_page_sections',
+        'form_fields'
     ];
 
     protected $casts = [
@@ -61,6 +62,7 @@ class Product extends Model
         'landing_page_en' => 'array',
         'landing_page_ar' => 'array',
         'landing_page_sections' => 'array',
+        'form_fields' => 'array',
     ];
 
     protected static function boot()
@@ -238,10 +240,10 @@ class Product extends Model
         $maxPrice = $variations->max('price');
 
         if ($minPrice == $maxPrice) {
-            return number_format($minPrice, 2) . ' MAD';
+            return number_format($minPrice, 2) . ' DHS';
         }
 
-        return number_format($minPrice, 2) . ' - ' . number_format($maxPrice, 2) . ' MAD';
+        return number_format($minPrice, 2) . ' - ' . number_format($maxPrice, 2) . ' DHS';
     }
 
     public function getTotalStockAttribute()

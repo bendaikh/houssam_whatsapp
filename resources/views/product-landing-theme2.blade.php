@@ -19,7 +19,7 @@
             content_ids: ['{{ $product->id }}'],
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'MAD'
+            currency: 'DHS'
         });
     </script>
     @endif
@@ -212,10 +212,10 @@
                         <div class="bg-white text-gray-900 px-6 py-3 rounded-2xl shadow-xl">
                             <div class="flex items-baseline gap-2">
                                 <span class="font-display text-5xl md:text-6xl font-black">{{ number_format($product->price, 0) }}</span>
-                                <span class="text-xl font-bold text-gray-600">MAD</span>
+                                <span class="text-xl font-bold text-gray-600">DHS</span>
                             </div>
                             @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                            <div class="text-sm line-through text-red-500 text-center font-semibold">{{ number_format($product->compare_at_price, 0) }} MAD</div>
+                            <div class="text-sm line-through text-red-500 text-center font-semibold">{{ number_format($product->compare_at_price, 0) }} DHS</div>
                             @endif
                         </div>
                         @if($product->compare_at_price && $product->compare_at_price > $product->price)
@@ -259,6 +259,46 @@
                         <input type="tel" name="phone" required
                             :placeholder="({ fr: '{{ $i18n['fr']['phone'] }}', en: '{{ $i18n['en']['phone'] }}', ar: '{{ $i18n['ar']['phone'] }}' })[currentLang]"
                             class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
+
+                        @if(!empty($product->form_fields))
+                            @foreach($product->form_fields as $customField)
+                                @if($customField['type'] === 'textarea')
+                                    <textarea 
+                                        name="custom_{{ $customField['id'] }}" 
+                                        rows="2"
+                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                        :placeholder="{{ json_encode([
+                                            'fr' => $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? '',
+                                            'en' => $customField['placeholder_en'] ?? $customField['label_en'] ?? $customField['label'] ?? '',
+                                            'ar' => $customField['placeholder_ar'] ?? $customField['label_ar'] ?? $customField['label'] ?? ''
+                                        ]) }}[currentLang]"
+                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold"></textarea>
+                                @elseif($customField['type'] === 'select')
+                                    <select 
+                                        name="custom_{{ $customField['id'] }}"
+                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
+                                        <option value="">{{ $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? 'Sélectionner...' }}</option>
+                                        @if(!empty($customField['options']))
+                                            @foreach($customField['options'] as $option)
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                @else
+                                    <input 
+                                        type="{{ $customField['type'] ?? 'text' }}" 
+                                        name="custom_{{ $customField['id'] }}" 
+                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
+                                        :placeholder="{{ json_encode([
+                                            'fr' => $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? '',
+                                            'en' => $customField['placeholder_en'] ?? $customField['label_en'] ?? $customField['label'] ?? '',
+                                            'ar' => $customField['placeholder_ar'] ?? $customField['label_ar'] ?? $customField['label'] ?? ''
+                                        ]) }}[currentLang]"
+                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
+                                @endif
+                            @endforeach
+                        @endif
 
                         <textarea name="note" rows="2"
                             :placeholder="({ fr: '{{ $i18n['fr']['note'] }}', en: '{{ $i18n['en']['note'] }}', ar: '{{ $i18n['ar']['note'] }}' })[currentLang]"
@@ -487,14 +527,20 @@
     </section>
     @endif
 
-    <!-- Sticky mobile order bar -->
-    <a href="#order-form" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-gradient-to-r {{ $ctaBg }} text-white font-display text-xl uppercase py-4 text-center shadow-2xl animate-pulse-scale">
+    <!-- Sticky order bar - Full width for all devices -->
+    <a href="#order-form" class="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r {{ $ctaBg }} text-white font-display text-xl md:text-2xl uppercase py-5 md:py-6 text-center shadow-2xl animate-pulse-scale flex items-center justify-center gap-3">
+        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
         ➤ <span x-text="({ fr: '{{ $i18n['fr']['order_now'] }}', en: '{{ $i18n['en']['order_now'] }}', ar: '{{ $i18n['ar']['order_now'] }}' })[currentLang]">{{ $ctaText }}</span>
-        - {{ number_format($product->price, 0) }} MAD
+        - {{ number_format($product->price, 0) }} DHS
+        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
     </a>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-6 pb-20 md:pb-6 text-center text-xs">
+    <footer class="bg-gray-900 text-gray-400 py-6 pb-24 text-center text-xs">
         <div class="container mx-auto px-4">
             <div class="font-bold text-white mb-1">{{ $store->name ?? 'Store' }}</div>
             © {{ date('Y') }} — All rights reserved.

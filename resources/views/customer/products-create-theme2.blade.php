@@ -154,7 +154,7 @@
                     <!-- Price and Compare Price -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Sale Price (MAD) *</label>
+                            <label for="price" class="block text-sm font-medium text-gray-300 mb-2">Sale Price (DHS) *</label>
                             <input 
                                 type="number" 
                                 id="price" 
@@ -172,7 +172,7 @@
                         </div>
 
                         <div>
-                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Original Price (MAD) <span class="text-yellow-400">- shows as crossed out</span></label>
+                            <label for="compare_at_price" class="block text-sm font-medium text-gray-300 mb-2">Original Price (DHS) <span class="text-yellow-400">- shows as crossed out</span></label>
                             <input 
                                 type="number" 
                                 id="compare_at_price" 
