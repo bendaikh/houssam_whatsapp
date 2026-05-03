@@ -58,6 +58,11 @@ class WebsiteCustomizationController extends Controller
         $storeId = $this->getActiveStoreId();
         $settings = WebsiteSettings::getSettings(auth()->id(), $storeId);
 
+        // Remove file upload fields from validated data to handle them separately
+        unset($validated['site_logo']);
+        unset($validated['site_favicon']);
+        unset($validated['hero_background_image']);
+
         // Handle file uploads
         if ($request->hasFile('site_logo')) {
             if ($settings->site_logo) {
@@ -72,9 +77,6 @@ class WebsiteCustomizationController extends Controller
             }
             $settings->site_favicon = $request->file('site_favicon')->store('website', 'public');
         }
-
-        // Remove hero_background_image from validated data to handle it separately
-        unset($validated['hero_background_image']);
 
         // Handle hero background image removal first
         if ($request->input('remove_hero_background_image')) {
@@ -147,6 +149,10 @@ class WebsiteCustomizationController extends Controller
         // Create a fake store object for preview
         $store = new \stdClass();
         $store->subdomain = 'preview';
+        $store->facebook_pixel_enabled = false;
+        $store->facebook_pixel_id = null;
+        $store->tiktok_pixel_enabled = false;
+        $store->tiktok_pixel_id = null;
         
         return view('welcome', compact('products', 'categories', 'featuredProducts', 'settings', 'store'))
             ->with('isPreview', true);

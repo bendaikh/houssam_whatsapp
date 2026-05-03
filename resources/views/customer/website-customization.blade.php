@@ -7,8 +7,8 @@
     <!-- Header -->
     <div class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Website Customization</h1>
-            <p class="text-gray-600 mt-2">Customize your storefront appearance and content</p>
+            <h1 class="text-3xl font-bold text-white">Website Customization</h1>
+            <p class="text-gray-400 mt-2">Customize your storefront appearance and content</p>
         </div>
         <a href="{{ route('app.website-preview') }}" target="_blank" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition inline-flex items-center gap-2">
             <span class="material-icons text-sm">visibility</span>

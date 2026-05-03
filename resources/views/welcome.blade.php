@@ -146,7 +146,7 @@
                 <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed {{ $settings->hero_background_image ? 'text-white' : 'text-gray-600' }}">
                     {!! nl2br(e($settings->hero_subtitle ?? 'Welcome to our store, your first destination for discovering unique products that have been carefully selected to suit your daily needs and give you an exceptional shopping experience. With us, you will find everything that is unique and unusual in the market.')) !!}
                 </p>
-                <a href="{{ $settings->hero_button_link ?? '#featured' }}" class="inline-flex items-center justify-center px-8 py-4 text-white text-lg font-semibold rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style="background-color: {{ $settings->primary_color }}">
+                <a href="#featured" class="inline-flex items-center justify-center px-8 py-4 text-white text-lg font-semibold rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style="background-color: {{ $settings->primary_color }}">
                     <span class="material-icons mr-2">shopping_bag</span>
                     {{ $settings->hero_button_text ?? 'Shop Now' }}
                 </a>

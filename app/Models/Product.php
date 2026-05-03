@@ -91,6 +91,7 @@ class Product extends Model
 
     /**
      * Resolve a stored path or URL to a usable browser URL (public disk, absolute URL, or site-relative).
+     * Returns null for local paths where the underlying file is missing so callers can fall back.
      */
     public static function resolvePublicImageUrl(?string $path): ?string
     {
@@ -99,26 +100,28 @@ class Product extends Model
         }
 
         $path = trim($path);
-        
+
         // If it's already a full URL, return as-is
         if (preg_match('#^https?://#i', $path)) {
             return $path;
         }
 
-        // If it's already a site-relative path starting with /
-        if (str_starts_with($path, '/')) {
-            return $path;
-        }
-        
-        // If it's already starting with /storage/, return as-is
-        if (str_starts_with($path, 'storage/')) {
-            return '/' . $path;
+        // Normalize to a relative storage path (no leading slash, no "storage/" prefix)
+        $relativePath = $path;
+        if (str_starts_with($relativePath, '/storage/')) {
+            $relativePath = substr($relativePath, strlen('/storage/'));
+        } elseif (str_starts_with($relativePath, 'storage/')) {
+            $relativePath = substr($relativePath, strlen('storage/'));
+        } else {
+            $relativePath = ltrim($relativePath, '/');
         }
 
-        // Build a relative URL to avoid APP_URL issues
-        // Remove any leading slashes and build the path
-        $cleanPath = ltrim($path, '/');
-        return '/storage/' . $cleanPath;
+        // Verify the file actually exists on the public disk; fall back if not
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+            return null;
+        }
+
+        return '/storage/' . $relativePath;
     }
 
     public function getFirstImageAttribute()
@@ -141,7 +144,26 @@ class Product extends Model
             }
         }
 
-        return 'https://via.placeholder.com/400x400/e5e7eb/6b7280?text=No+Image';
+        return self::placeholderImageUri();
+    }
+
+    /**
+     * Returns an inline SVG data URI placeholder so it works offline and
+     * doesn't depend on any external service being reachable.
+     */
+    public static function placeholderImageUri(): string
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">'
+            . '<rect width="400" height="400" fill="#e5e7eb"/>'
+            . '<g fill="#9ca3af">'
+            . '<circle cx="200" cy="170" r="40"/>'
+            . '<rect x="120" y="230" width="160" height="16" rx="8"/>'
+            . '<rect x="140" y="258" width="120" height="10" rx="5"/>'
+            . '</g>'
+            . '<text x="200" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">No Image</text>'
+            . '</svg>';
+
+        return 'data:image/svg+xml;utf8,' . rawurlencode($svg);
     }
 
     public function getDiscountPercentageAttribute()
@@ -180,9 +202,9 @@ class Product extends Model
         }
         
         if (empty($images)) {
-            return ['https://via.placeholder.com/800x800/e5e7eb/6b7280?text=No+Image'];
+            return [self::placeholderImageUri()];
         }
-        
+
         return $images;
     }
 

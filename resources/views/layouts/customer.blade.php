@@ -8,6 +8,29 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* Ensure form fields inside the main page area always have readable
+           dark text on a white background. The body uses `text-white` which
+           was being inherited by inputs and made user typing invisible. */
+        main input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+        main textarea,
+        main select {
+            color: #111827; /* gray-900 */
+            background-color: #ffffff;
+        }
+        main input::placeholder,
+        main textarea::placeholder {
+            color: #9ca3af; /* gray-400 */
+            opacity: 1;
+        }
+        main input[type="file"] {
+            color: #374151; /* gray-700 */
+        }
+        /* Color picker swatch should keep its native look but stay readable */
+        main input[type="color"] {
+            background-color: #ffffff;
+        }
+    </style>
 </head>
 <body class="bg-[#0a1628] text-white antialiased">
     <div class="flex h-screen overflow-hidden">
@@ -350,20 +373,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-4">
-                        @if(request()->routeIs('app.*'))
-                            <button class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition">
-                                Upgrade
-                            </button>
-                            <div class="flex items-center gap-2 text-sm">
-                                <span class="text-gray-400">fr</span>
-                                <span class="text-gray-600">|</span>
-                                <span class="text-gray-400">MAD</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-sm">
-                                <span class="text-white font-medium">900</span>
-                                <span class="text-gray-400">tokens left</span>
-                            </div>
-                        @endif
+                        {{-- Header elements hidden as requested --}}
                     </div>
                 </div>
             </header>

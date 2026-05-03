@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('AI API Integration') }}
             </h2>
-            <p class="text-sm text-gray-600 mt-1">Configure AI settings for your workspace - applies to all stores</p>
+            <p class="text-sm text-gray-600 mt-1">Configure global AI settings - applies to all workspaces and stores</p>
         </div>
     </x-slot>
 
@@ -174,9 +174,9 @@
                         </svg>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-blue-900">Workspace-Level Settings</h4>
+                        <h4 class="text-sm font-semibold text-blue-900">Global Account Settings</h4>
                         <p class="text-sm text-blue-700 mt-1">
-                            These AI API settings apply to <strong>all stores</strong> in this workspace. You only need to configure this once, and all your stores will be able to use AI features like auto-reply, landing page generation, and ad copy generation.
+                            These AI API settings apply to <strong>all workspaces and stores</strong> in your account. You only need to configure this once, and all your workspaces and stores will be able to use AI features like auto-reply, landing page generation, and ad copy generation.
                         </p>
                     </div>
                 </div>

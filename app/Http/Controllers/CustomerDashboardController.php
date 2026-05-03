@@ -135,12 +135,7 @@ class CustomerDashboardController extends Controller
     public function aiSettings()
     {
         $user = auth()->user();
-        $workspaceId = session('active_workspace_id');
-            
-        $aiSetting = null;
-        if ($workspaceId) {
-            $aiSetting = AiApiSetting::where('workspace_id', $workspaceId)->first();
-        }
+        $aiSetting = AiApiSetting::where('user_id', $user->id)->first();
 
         return view('workspaces.ai-settings', compact('aiSetting'));
     }
@@ -154,15 +149,9 @@ class CustomerDashboardController extends Controller
             'auto_reply_enabled' => 'nullable|boolean',
         ]);
 
-        $workspaceId = session('active_workspace_id');
+        $user = auth()->user();
         
-        if (!$workspaceId) {
-            return redirect()
-                ->route('workspaces.dashboard')
-                ->with('error', 'Please select a workspace first.');
-        }
-
-        $setting = AiApiSetting::firstOrNew(['workspace_id' => $workspaceId]);
+        $setting = AiApiSetting::firstOrNew(['user_id' => $user->id]);
         $setting->openai_model = $validated['openai_model'];
         $setting->auto_reply_enabled = $request->boolean('auto_reply_enabled');
 
@@ -182,15 +171,8 @@ class CustomerDashboardController extends Controller
 
     public function testOpenAiConnection(Request $request)
     {
-        $workspaceId = session('active_workspace_id');
-        
-        if (!$workspaceId) {
-            return redirect()
-                ->route('workspaces.dashboard')
-                ->with('error', 'Please select a workspace first.');
-        }
-
-        $setting = AiApiSetting::where('workspace_id', $workspaceId)->first();
+        $user = auth()->user();
+        $setting = AiApiSetting::where('user_id', $user->id)->first();
 
         if (! $setting || empty($setting->openai_api_key_encrypted)) {
             return redirect()
@@ -236,15 +218,9 @@ class CustomerDashboardController extends Controller
             'clear_anthropic_key' => 'nullable|boolean',
         ]);
 
-        $workspaceId = session('active_workspace_id');
+        $user = auth()->user();
         
-        if (!$workspaceId) {
-            return redirect()
-                ->route('workspaces.dashboard')
-                ->with('error', 'Please select a workspace first.');
-        }
-
-        $setting = AiApiSetting::firstOrNew(['workspace_id' => $workspaceId]);
+        $setting = AiApiSetting::firstOrNew(['user_id' => $user->id]);
         $setting->anthropic_model = $validated['anthropic_model'];
 
         if ($request->boolean('clear_anthropic_key')) {
@@ -263,15 +239,8 @@ class CustomerDashboardController extends Controller
 
     public function testAnthropicConnection(Request $request)
     {
-        $workspaceId = session('active_workspace_id');
-        
-        if (!$workspaceId) {
-            return redirect()
-                ->route('workspaces.dashboard')
-                ->with('error', 'Please select a workspace first.');
-        }
-
-        $setting = AiApiSetting::where('workspace_id', $workspaceId)->first();
+        $user = auth()->user();
+        $setting = AiApiSetting::where('user_id', $user->id)->first();
 
         if (! $setting || empty($setting->anthropic_api_key_encrypted)) {
             return redirect()
