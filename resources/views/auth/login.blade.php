@@ -1,18 +1,18 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-white mb-2">Welcome back</h2>
-        <p class="text-gray-400">Sign in to your account to continue</p>
+        <h2 class="text-2xl font-bold text-white mb-2">مرحباً بعودتك</h2>
+        <p class="text-gray-400">سجّل الدخول إلى حسابك للمتابعة</p>
     </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-6">
+    <form method="POST" action="{{ url('/houssam/login') }}" class="space-y-6">
         @csrf
 
         <!-- Email Address -->
         <div>
-            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">البريد الإلكتروني</label>
             <input 
                 id="email" 
                 type="email" 
@@ -29,7 +29,7 @@
 
         <!-- Password -->
         <div>
-            <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <label for="password" class="block text-sm font-medium text-gray-300 mb-2">كلمة المرور</label>
             <input 
                 id="password" 
                 type="password" 
@@ -51,12 +51,12 @@
                     class="rounded border-white/10 bg-[#0a1628] text-emerald-500 shadow-sm focus:ring-emerald-500 focus:ring-offset-0 transition" 
                     name="remember"
                 >
-                <span class="ms-2 text-sm text-gray-400">Remember me</span>
+                <span class="ms-2 text-sm text-gray-400">تذكرني</span>
             </label>
 
             @if (Route::has('password.request'))
                 <a class="text-sm text-emerald-400 hover:text-emerald-300 transition" href="{{ route('password.request') }}">
-                    Forgot password?
+                    نسيت كلمة المرور؟
                 </a>
             @endif
         </div>
@@ -66,23 +66,13 @@
             type="submit"
             class="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition shadow-lg shadow-emerald-500/30"
         >
-            Sign in
+            تسجيل الدخول
         </button>
     </form>
 
-    <!-- Register Link -->
-    <div class="mt-6 text-center">
-        <p class="text-sm text-gray-400">
-            Don't have an account? 
-            <a href="{{ route('register') }}" class="text-emerald-400 hover:text-emerald-300 font-semibold transition">
-                Sign up for free
-            </a>
-        </p>
-    </div>
-
     <x-slot name="footerText">
         <a href="{{ url('/') }}" class="text-emerald-400 hover:text-emerald-300 transition">
-            ← Back to home
+            → العودة للرئيسية
         </a>
     </x-slot>
 </x-guest-layout>

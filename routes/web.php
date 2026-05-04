@@ -26,8 +26,16 @@ Route::get('/storage/{path}', function ($path) {
 })->where('path', '.*')->name('storage.serve');
 
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    return view('coming-soon');
+})->name('coming-soon');
+
+// Secret login route - only accessible via /houssam/login
+Route::get('/houssam/login', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'create'])
+    ->middleware('guest')
+    ->name('secret.login');
+
+Route::post('/houssam/login', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store'])
+    ->middleware('guest');
 
 Route::get('/store/{subdomain}', [ProductController::class, 'index'])->name('store.home');
 Route::get('/store/{subdomain}/product/{slug}', [ProductController::class, 'show'])->name('store.product.show');

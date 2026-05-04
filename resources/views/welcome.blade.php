@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<html lang="ar" dir="rtl" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $settings->site_name ?? config('app.name') }} - Online Store</title>
+    <title>{{ $settings->site_name ?? config('app.name') }} - متجر إلكتروني</title>
     @if($settings->meta_description)
     <meta name="description" content="{{ $settings->meta_description }}">
     @endif
@@ -60,9 +60,9 @@
     <!-- Preview Mode Banner -->
     @if(isset($isPreview) && $isPreview)
     <div class="fixed top-0 left-0 right-0 z-[100] bg-yellow-500 text-black py-2 px-4 text-center font-bold shadow-lg">
-        <span class="material-icons align-middle text-sm mr-2">visibility</span>
-        PREVIEW MODE - This is how your website will look
-        <a href="{{ route('app.website-customization') }}" class="ml-4 underline hover:no-underline">Back to Editor</a>
+        <span class="material-icons align-middle text-sm ml-2">visibility</span>
+        وضع المعاينة - هذا هو شكل موقعك
+        <a href="{{ route('app.website-customization') }}" class="mr-4 underline hover:no-underline">العودة للمحرر</a>
     </div>
     <div class="h-10"></div>
     @endif
@@ -91,35 +91,25 @@
                     @endif
                 </div>
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="{{ route('store.home', $store->subdomain) }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">Home</a>
-                    <a href="#categories" class="text-gray-700 hover:text-emerald-600 font-medium transition">Categories</a>
-                    <a href="#featured" class="text-gray-700 hover:text-emerald-600 font-medium transition">Featured</a>
-                    <a href="#contact" class="text-gray-700 hover:text-emerald-600 font-medium transition">Contact</a>
+                    <a href="{{ route('store.home', $store->subdomain) }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">الرئيسية</a>
+                    <a href="#categories" class="text-gray-700 hover:text-emerald-600 font-medium transition">الفئات</a>
+                    <a href="#featured" class="text-gray-700 hover:text-emerald-600 font-medium transition">المميزة</a>
+                    <a href="#contact" class="text-gray-700 hover:text-emerald-600 font-medium transition">اتصل بنا</a>
                 </div>
                 <div class="flex items-center gap-4">
                     @if($settings->whatsapp_number)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}" target="_blank" class="text-green-600 hover:text-green-700 font-medium transition flex items-center gap-2" title="Contact us on WhatsApp">
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}" target="_blank" class="text-green-600 hover:text-green-700 font-medium transition flex items-center gap-2" title="تواصل معنا عبر واتساب">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                         </svg>
-                        <span class="hidden md:inline">WhatsApp</span>
+                        <span class="hidden md:inline">واتساب</span>
                     </a>
                     @endif
-                    @if (Route::has('login'))
-                        @auth
-                            <a href="{{ url('/dashboard') }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">
-                                <span class="material-icons align-middle">dashboard</span>
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">Login</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="px-6 py-3 text-white rounded-lg font-medium transition shadow-lg hover:shadow-xl" style="background-color: {{ $settings->primary_color }}">
-                                    <span class="material-icons align-middle text-sm mr-1">person_add</span>
-                                    Register
-                                </a>
-                            @endif
-                        @endauth
-                    @endif
+                    @auth
+                        <a href="{{ url('/dashboard') }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">
+                            <span class="material-icons align-middle">dashboard</span>
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -141,14 +131,14 @@
         <div class="container mx-auto max-w-7xl relative z-10">
             <div class="text-center mb-12">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 {{ $settings->hero_background_image ? 'text-white' : 'text-gray-900' }}">
-                    {{ $settings->hero_title ?? 'Welcome to our store' }}
+                    {{ $settings->hero_title ?? 'مرحباً بكم في متجرنا' }}
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed {{ $settings->hero_background_image ? 'text-white' : 'text-gray-600' }}">
-                    {!! nl2br(e($settings->hero_subtitle ?? 'Welcome to our store, your first destination for discovering unique products that have been carefully selected to suit your daily needs and give you an exceptional shopping experience. With us, you will find everything that is unique and unusual in the market.')) !!}
+                    {!! nl2br(e($settings->hero_subtitle ?? 'مرحباً بكم في متجرنا، وجهتكم الأولى لاكتشاف منتجات فريدة تم اختيارها بعناية لتناسب احتياجاتكم اليومية وتمنحكم تجربة تسوق استثنائية. معنا ستجدون كل ما هو مميز ونادر في السوق.')) !!}
                 </p>
                 <a href="#featured" class="inline-flex items-center justify-center px-8 py-4 text-white text-lg font-semibold rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style="background-color: {{ $settings->primary_color }}">
-                    <span class="material-icons mr-2">shopping_bag</span>
-                    {{ $settings->hero_button_text ?? 'Shop Now' }}
+                    <span class="material-icons ml-2">shopping_bag</span>
+                    {{ $settings->hero_button_text ?? 'تسوق الآن' }}
                 </a>
             </div>
         </div>
@@ -158,18 +148,18 @@
     <section id="categories" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div class="container mx-auto max-w-7xl">
             <div class="flex items-center justify-center mb-12">
-                <span class="material-icons text-4xl mr-3" style="color: {{ $settings->accent_color }}">auto_awesome</span>
+                <span class="material-icons text-4xl ml-3" style="color: {{ $settings->accent_color }}">auto_awesome</span>
                 <div>
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Our Categories</h2>
-                    <p class="text-gray-600">Choose by category</p>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">فئاتنا</h2>
+                    <p class="text-gray-600">اختر حسب الفئة</p>
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 @foreach($categories as $category)
-                <a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}" class="group bg-gradient-to-br rounded-xl p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
+                <a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}#products" class="group bg-gradient-to-br rounded-xl p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
                     <span class="material-icons text-5xl mb-4" style="color: {{ $category->color }}">{{ $category->icon }}</span>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $category->name }}</h3>
-                    <span class="material-icons text-gray-400">arrow_back_ios</span>
+                    <span class="material-icons text-gray-400">arrow_forward_ios</span>
                 </a>
                 @endforeach
             </div>
@@ -181,14 +171,14 @@
     <section id="featured" class="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white">
         <div class="container mx-auto max-w-7xl">
             <div class="flex items-center justify-center mb-12">
-                <span class="material-icons text-4xl mr-3" style="color: {{ $settings->accent_color }}">auto_awesome</span>
+                <span class="material-icons text-4xl ml-3" style="color: {{ $settings->accent_color }}">auto_awesome</span>
                 <div>
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Featured Products</h2>
-                    <p class="text-gray-600">Get the best products</p>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">المنتجات المميزة</h2>
+                    <p class="text-gray-600">احصل على أفضل المنتجات</p>
                 </div>
             </div>
             <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                Here is a compilation of our best-selling products.
+                إليكم مجموعة من أفضل المنتجات مبيعاً لدينا.
             </p>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
@@ -199,21 +189,21 @@
                             <img src="{{ $product->first_image }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         </div>
                         @if($product->discount_percentage > 0)
-                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        <div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                             -{{ $product->discount_percentage }}%
                         </div>
                         @endif
                     </div>
                     <div class="p-6">
                         <div class="flex items-baseline gap-2 mb-3">
-                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} DHS</span>
+                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} درهم</span>
                             @if($product->compare_at_price)
-                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} DHS</span>
+                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} درهم</span>
                             @endif
                         </div>
                         <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2">{{ $product->name }}</h3>
                         <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
-                            View Details
+                            عرض التفاصيل
                         </a>
                     </div>
                 </div>
@@ -224,15 +214,33 @@
     @endif
 
     <!-- All Products Section -->
-    <section class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="products" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div class="container mx-auto max-w-7xl">
+            @php
+                $activeCategory = request('category') ? $categories->where('slug', request('category'))->first() : null;
+            @endphp
+            
             <div class="flex items-center justify-center mb-12">
-                <span class="material-icons text-4xl mr-3" style="color: {{ $settings->secondary_color }}">inventory_2</span>
+                <span class="material-icons text-4xl ml-3" style="color: {{ $settings->secondary_color }}">inventory_2</span>
                 <div>
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">All Products</h2>
-                    <p class="text-gray-600">Browse our complete catalog</p>
+                    @if($activeCategory)
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{{ $activeCategory->name }}</h2>
+                        <p class="text-gray-600">منتجات فئة {{ $activeCategory->name }}</p>
+                    @else
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">جميع المنتجات</h2>
+                        <p class="text-gray-600">تصفح كتالوجنا الكامل</p>
+                    @endif
                 </div>
             </div>
+            
+            @if($activeCategory)
+            <div class="text-center mb-8">
+                <a href="{{ route('store.home', $store->subdomain) }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
+                    <span class="material-icons ml-2 text-sm">close</span>
+                    إزالة الفلتر
+                </a>
+            </div>
+            @endif
 
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                 @foreach($products as $product)
@@ -242,27 +250,27 @@
                             <img src="{{ $product->first_image }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         </div>
                         @if($product->discount_percentage > 0)
-                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        <div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                             -{{ $product->discount_percentage }}%
                         </div>
                         @endif
                         @if($product->stock <= 0)
                         <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                            <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">Out of Stock</span>
+                            <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">نفذت الكمية</span>
                         </div>
                         @endif
                     </div>
                     <div class="p-6">
-                        <div class="text-sm text-gray-500 mb-2">{{ $product->category->name ?? 'Uncategorized' }}</div>
+                        <div class="text-sm text-gray-500 mb-2">{{ $product->category->name ?? 'غير مصنف' }}</div>
                         <div class="flex items-baseline gap-2 mb-3">
-                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} DHS</span>
+                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} درهم</span>
                             @if($product->compare_at_price)
-                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} DHS</span>
+                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} درهم</span>
                             @endif
                         </div>
                         <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2">{{ $product->name }}</h3>
                         <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
-                            View Details
+                            عرض التفاصيل
                         </a>
                     </div>
                 </div>
@@ -270,7 +278,7 @@
             </div>
 
             @if($products->count() === 0)
-            <p class="text-center text-gray-500">No products available at the moment.</p>
+            <p class="text-center text-gray-500">لا توجد منتجات متاحة حالياً.</p>
             @endif
 
             <!-- Pagination -->
@@ -284,46 +292,46 @@
     <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white">
         <div class="container mx-auto max-w-4xl">
             <div class="flex items-center justify-center mb-12">
-                <span class="material-icons text-4xl mr-3" style="color: {{ $settings->secondary_color }}">question_answer</span>
+                <span class="material-icons text-4xl ml-3" style="color: {{ $settings->secondary_color }}">question_answer</span>
                 <div>
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Questions and Answers</h2>
-                    <p class="text-gray-600">Frequently Asked Questions</p>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">أسئلة وأجوبة</h2>
+                    <p class="text-gray-600">الأسئلة الشائعة</p>
                 </div>
             </div>
             
             <div class="space-y-4 mb-12">
                 <details class="bg-white rounded-lg border-2 border-gray-200 hover:border-emerald-500 transition-colors group">
                     <summary class="px-6 py-4 font-semibold cursor-pointer flex justify-between items-center text-gray-900 group-hover:text-emerald-600 transition">
-                        <span>How do I place an order?</span>
+                        <span>كيف أقوم بتقديم طلب؟</span>
                         <span class="material-icons transform group-open:rotate-180 transition-transform">keyboard_arrow_down</span>
                     </summary>
                     <div class="px-6 pb-4 text-gray-600">
-                        Browse our products, click on the product you like, and contact us via WhatsApp to complete your order.
+                        تصفح منتجاتنا، انقر على المنتج الذي يعجبك، وتواصل معنا عبر واتساب لإتمام طلبك.
                     </div>
                 </details>
                 <details class="bg-white rounded-lg border-2 border-gray-200 hover:border-emerald-500 transition-colors group">
                     <summary class="px-6 py-4 font-semibold cursor-pointer flex justify-between items-center text-gray-900 group-hover:text-emerald-600 transition">
-                        <span>Cash on Delivery Policy</span>
+                        <span>سياسة الدفع عند الاستلام</span>
                         <span class="material-icons transform group-open:rotate-180 transition-transform">keyboard_arrow_down</span>
                     </summary>
                     <div class="px-6 pb-4 text-gray-600">
-                        We provide you with the option of cash on delivery in most Moroccan cities for your convenience and confidence. You pay directly upon receiving the parcel from the delivery worker.
+                        نوفر لكم خيار الدفع عند الاستلام في معظم المدن المغربية لراحتكم وثقتكم. تدفعون مباشرة عند استلام الطرد من عامل التوصيل.
                     </div>
                 </details>
                 <details class="bg-white rounded-lg border-2 border-gray-200 hover:border-emerald-500 transition-colors group">
                     <summary class="px-6 py-4 font-semibold cursor-pointer flex justify-between items-center text-gray-900 group-hover:text-emerald-600 transition">
-                        <span>How long does shipping take?</span>
+                        <span>كم تستغرق عملية الشحن؟</span>
                         <span class="material-icons transform group-open:rotate-180 transition-transform">keyboard_arrow_down</span>
                     </summary>
                     <div class="px-6 pb-4 text-gray-600">
-                        Shipping typically takes 2-5 business days depending on your location within Morocco.
+                        تستغرق عملية الشحن عادةً من 2 إلى 5 أيام عمل حسب موقعك في المغرب.
                     </div>
                 </details>
             </div>
 
             <div class="text-center p-8 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl">
-                <h3 class="text-2xl font-bold text-gray-900 mb-4">Have other questions?</h3>
-                <p class="text-gray-600 mb-6">If you still want additional information, you can always contact us.</p>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">هل لديك أسئلة أخرى؟</h3>
+                <p class="text-gray-600 mb-6">إذا كنت تريد المزيد من المعلومات، يمكنك دائماً التواصل معنا.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     @if($settings->contact_email)
                     <a href="mailto:{{ $settings->contact_email }}" class="inline-flex items-center px-6 py-3 text-white rounded-lg font-medium transition shadow-lg hover:shadow-xl" style="background-color: {{ $settings->primary_color }}">
@@ -362,7 +370,7 @@
             @if($settings->contact_phone)
             <div class="border-t border-gray-700 pt-8 mb-8">
                 <p class="text-center text-sm text-gray-400 mb-4">
-                    Available between 9 AM and 8 PM. We are ready to respond to your inquiries. 
+                    متاحون من الساعة 9 صباحاً حتى 8 مساءً. نحن جاهزون للرد على استفساراتكم. 
                     <a href="tel:{{ $settings->contact_phone }}" style="color: {{ $settings->primary_color }}" class="hover:underline">{{ $settings->contact_phone }}</a>
                 </p>
             </div>
@@ -370,15 +378,15 @@
 
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                    <h3 class="font-bold text-lg mb-4">About Us</h3>
+                    <h3 class="font-bold text-lg mb-4">من نحن</h3>
                     <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="#contact" class="hover:text-emerald-400 transition">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-emerald-400 transition">About Us</a></li>
-                        <li><a href="#" class="hover:text-emerald-400 transition">Privacy Policy</a></li>
+                        <li><a href="#contact" class="hover:text-emerald-400 transition">اتصل بنا</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition">عن المتجر</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition">سياسة الخصوصية</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg mb-4">Categories</h3>
+                    <h3 class="font-bold text-lg mb-4">الفئات</h3>
                     <ul class="space-y-2 text-sm text-gray-400">
                         @foreach($categories->take(4) as $category)
                         <li><a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}" class="hover:text-emerald-400 transition">{{ $category->name }}</a></li>
@@ -386,11 +394,11 @@
                     </ul>
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg mb-4">Quick Links</h3>
+                    <h3 class="font-bold text-lg mb-4">روابط سريعة</h3>
                     <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="{{ route('store.home', $store->subdomain) }}" class="hover:text-emerald-400 transition">Home</a></li>
-                        <li><a href="#featured" class="hover:text-emerald-400 transition">Featured Products</a></li>
-                        <li><a href="#contact" class="hover:text-emerald-400 transition">Contact</a></li>
+                        <li><a href="{{ route('store.home', $store->subdomain) }}" class="hover:text-emerald-400 transition">الرئيسية</a></li>
+                        <li><a href="#featured" class="hover:text-emerald-400 transition">المنتجات المميزة</a></li>
+                        <li><a href="#contact" class="hover:text-emerald-400 transition">اتصل بنا</a></li>
                     </ul>
                 </div>
                 <div>
@@ -399,7 +407,7 @@
                     @else
                     <div class="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-blue-600 bg-clip-text text-transparent mb-4">{{ $settings->site_name }}</div>
                     @endif
-                    <p class="text-sm text-gray-400 mb-4">{{ $settings->footer_about ?? 'Your trusted online store for quality products.' }}</p>
+                    <p class="text-sm text-gray-400 mb-4">{{ $settings->footer_about ?? 'متجركم الموثوق للمنتجات عالية الجودة.' }}</p>
                     @if($settings->facebook_url || $settings->instagram_url || $settings->twitter_url)
                     <div class="flex gap-3">
                         @if($settings->facebook_url)
@@ -430,7 +438,7 @@
 
     <!-- Floating WhatsApp Button -->
     @if($settings->whatsapp_number)
-    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}" target="_blank" class="fixed bottom-6 right-6 z-50 w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 animate-bounce" title="Chat with us on WhatsApp">
+    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}" target="_blank" class="fixed bottom-6 left-6 z-50 w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 animate-bounce" title="تواصل معنا عبر واتساب">
         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
         </svg>

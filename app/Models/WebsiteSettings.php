@@ -67,17 +67,17 @@ class WebsiteSettings extends Model
             $where,
             [
                 'site_name' => config('app.name'),
-                'hero_title' => 'Welcome to our store',
-                'hero_subtitle' => 'Discover unique products carefully selected for you',
-                'banner_text' => 'Number 1 Online Store in Morocco! Direct from us to you',
+                'hero_title' => 'مرحباً بكم في متجرنا',
+                'hero_subtitle' => 'اكتشف منتجات فريدة تم اختيارها بعناية من أجلك',
+                'banner_text' => 'المتجر الإلكتروني رقم 1 في المغرب! مباشرة من عندنا إلى عندكم',
                 'contact_phone' => '(212) 661-360879',
-                'footer_about' => 'Your trusted online store for quality products.',
-                'footer_copyright' => '© 2026 ' . config('app.name') . '. All rights reserved.',
+                'footer_about' => 'متجركم الموثوق للمنتجات عالية الجودة.',
+                'footer_copyright' => '© 2026 ' . config('app.name') . '. جميع الحقوق محفوظة.',
                 'features' => [
-                    ['icon' => 'local_shipping', 'title' => 'Free Delivery', 'color' => '#10b981'],
-                    ['icon' => 'support_agent', 'title' => 'Customer Service', 'color' => '#3b82f6'],
-                    ['icon' => 'public', 'title' => 'Available in Morocco', 'color' => '#a855f7'],
-                    ['icon' => 'payment', 'title' => 'Cash on Delivery', 'color' => '#f97316'],
+                    ['icon' => 'local_shipping', 'title' => 'توصيل مجاني', 'color' => '#10b981'],
+                    ['icon' => 'support_agent', 'title' => 'خدمة العملاء', 'color' => '#3b82f6'],
+                    ['icon' => 'public', 'title' => 'متوفر في المغرب', 'color' => '#a855f7'],
+                    ['icon' => 'payment', 'title' => 'الدفع عند الاستلام', 'color' => '#f97316'],
                 ],
             ]
         );

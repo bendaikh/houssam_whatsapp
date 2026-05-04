@@ -12,14 +12,17 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // Regular login redirects to coming soon page
+    Route::get('login', function () {
+        return redirect()->route('coming-soon');
+    })->name('login');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    // Register also redirects to coming soon page
+    Route::get('register', function () {
+        return redirect()->route('coming-soon');
+    })->name('register');
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
+    // POST login still works for the secret login form
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
