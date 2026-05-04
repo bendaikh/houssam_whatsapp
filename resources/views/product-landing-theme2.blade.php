@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="scroll-smooth" x-data="{ currentLang: 'fr' }">
+<html lang="ar" class="scroll-smooth" x-data="{ currentLang: 'ar' }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -42,6 +42,38 @@
         .animate-pulse-scale { animation: pulse-scale 1.6s ease-in-out infinite; }
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .animate-marquee { animation: marquee 20s linear infinite; }
+        
+        /* Quill editor text alignment classes */
+        .ql-align-center,
+        .prose .ql-align-center {
+            text-align: center !important;
+        }
+        .ql-align-right,
+        .prose .ql-align-right {
+            text-align: right !important;
+        }
+        .ql-align-left,
+        .prose .ql-align-left {
+            text-align: left !important;
+        }
+        .ql-align-justify,
+        .prose .ql-align-justify {
+            text-align: justify !important;
+        }
+        
+        /* Also support inline styles */
+        [style*="text-align: center"],
+        [style*="text-align:center"] {
+            text-align: center !important;
+        }
+        [style*="text-align: right"],
+        [style*="text-align:right"] {
+            text-align: right !important;
+        }
+        [style*="text-align: left"],
+        [style*="text-align:left"] {
+            text-align: left !important;
+        }
     </style>
 </head>
 @php
@@ -175,12 +207,6 @@
         </div>
     </div>
 
-    <!-- Language Switcher -->
-    <div class="fixed top-2 right-2 z-50 bg-white shadow-lg rounded-full p-0.5 flex gap-0.5 border border-gray-200">
-        <button @click="currentLang = 'fr'" :class="currentLang === 'fr' ? 'bg-gray-900 text-white' : 'text-gray-700'" class="px-2.5 py-1 rounded-full font-bold text-[10px] transition">FR</button>
-        <button @click="currentLang = 'en'" :class="currentLang === 'en' ? 'bg-gray-900 text-white' : 'text-gray-700'" class="px-2.5 py-1 rounded-full font-bold text-[10px] transition">EN</button>
-        <button @click="currentLang = 'ar'" :class="currentLang === 'ar' ? 'bg-gray-900 text-white' : 'text-gray-700'" class="px-2.5 py-1 rounded-full font-bold text-[10px] transition">AR</button>
-    </div>
 
     <!-- HERO: Big bold product title + image + order form + price -->
     <section class="relative bg-gradient-to-br {{ $heroBg }} stripe-bg text-white overflow-hidden">
@@ -207,15 +233,27 @@
                     </div>
                     @endif
 
+                    @php
+                        // Helper function to format price - show decimals only when needed
+                        if (!function_exists('formatPrice')) {
+                            function formatPrice($price) {
+                                if ($price == floor($price)) {
+                                    return number_format($price, 0);
+                                } else {
+                                    return rtrim(rtrim(number_format($price, 2), '0'), '.');
+                                }
+                            }
+                        }
+                    @endphp
                     <!-- Big price display -->
                     <div class="flex items-center justify-center lg:justify-start gap-4 pt-2">
                         <div class="bg-white text-gray-900 px-6 py-3 rounded-2xl shadow-xl">
                             <div class="flex items-baseline gap-2">
-                                <span class="font-display text-5xl md:text-6xl font-black">{{ number_format($product->price, 0) }}</span>
+                                <span class="font-display text-5xl md:text-6xl font-black">{{ formatPrice($product->price) }}</span>
                                 <span class="text-xl font-bold text-gray-600">DHS</span>
                             </div>
                             @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                            <div class="text-sm line-through text-red-500 text-center font-semibold">{{ number_format($product->compare_at_price, 0) }} DHS</div>
+                            <div class="text-sm line-through text-red-500 text-center font-semibold">{{ formatPrice($product->compare_at_price) }} DHS</div>
                             @endif
                         </div>
                         @if($product->compare_at_price && $product->compare_at_price > $product->price)
@@ -248,64 +286,50 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" method="POST" class="space-y-3">
+                    @php
+                        // Get form fields or use defaults
+                        $formFields = $product->form_fields ?? [
+                            ['id' => 'name', 'type' => 'text', 'label_ar' => 'الاسم', 'placeholder_ar' => 'الاسم الكامل', 'required' => true],
+                            ['id' => 'phone', 'type' => 'tel', 'label_ar' => 'الهاتف', 'placeholder_ar' => 'رقم الهاتف', 'required' => true],
+                            ['id' => 'note', 'type' => 'textarea', 'label_ar' => 'ملاحظة', 'placeholder_ar' => 'ملاحظة', 'required' => false],
+                        ];
+                    @endphp
+                    <form action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" method="POST" class="space-y-3" dir="rtl">
                         @csrf
-                        <input type="hidden" name="language" :value="currentLang">
+                        <input type="hidden" name="language" value="ar">
 
-                        <input type="text" name="name" required
-                            :placeholder="({ fr: '{{ $i18n['fr']['name'] }}', en: '{{ $i18n['en']['name'] }}', ar: '{{ $i18n['ar']['name'] }}' })[currentLang]"
-                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
-
-                        <input type="tel" name="phone" required
-                            :placeholder="({ fr: '{{ $i18n['fr']['phone'] }}', en: '{{ $i18n['en']['phone'] }}', ar: '{{ $i18n['ar']['phone'] }}' })[currentLang]"
-                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
-
-                        @if(!empty($product->form_fields))
-                            @foreach($product->form_fields as $customField)
-                                @if($customField['type'] === 'textarea')
-                                    <textarea 
-                                        name="custom_{{ $customField['id'] }}" 
-                                        rows="2"
-                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
-                                        :placeholder="{{ json_encode([
-                                            'fr' => $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? '',
-                                            'en' => $customField['placeholder_en'] ?? $customField['label_en'] ?? $customField['label'] ?? '',
-                                            'ar' => $customField['placeholder_ar'] ?? $customField['label_ar'] ?? $customField['label'] ?? ''
-                                        ]) }}[currentLang]"
-                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold"></textarea>
-                                @elseif($customField['type'] === 'select')
-                                    <select 
-                                        name="custom_{{ $customField['id'] }}"
-                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
-                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
-                                        <option value="">{{ $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? 'Sélectionner...' }}</option>
-                                        @if(!empty($customField['options']))
-                                            @foreach($customField['options'] as $option)
-                                                <option value="{{ $option }}">{{ $option }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                @else
-                                    <input 
-                                        type="{{ $customField['type'] ?? 'text' }}" 
-                                        name="custom_{{ $customField['id'] }}" 
-                                        {{ ($customField['required'] ?? false) ? 'required' : '' }}
-                                        :placeholder="{{ json_encode([
-                                            'fr' => $customField['placeholder_fr'] ?? $customField['label_fr'] ?? $customField['label'] ?? '',
-                                            'en' => $customField['placeholder_en'] ?? $customField['label_en'] ?? $customField['label'] ?? '',
-                                            'ar' => $customField['placeholder_ar'] ?? $customField['label_ar'] ?? $customField['label'] ?? ''
-                                        ]) }}[currentLang]"
-                                        class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold">
-                                @endif
-                            @endforeach
-                        @endif
-
-                        <textarea name="note" rows="2"
-                            :placeholder="({ fr: '{{ $i18n['fr']['note'] }}', en: '{{ $i18n['en']['note'] }}', ar: '{{ $i18n['ar']['note'] }}' })[currentLang]"
-                            class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold"></textarea>
+                        @foreach($formFields as $field)
+                            @if(($field['type'] ?? 'text') === 'textarea')
+                                <textarea 
+                                    name="{{ $field['id'] }}" 
+                                    rows="2"
+                                    {{ ($field['required'] ?? false) ? 'required' : '' }}
+                                    placeholder="{{ $field['placeholder_ar'] ?? $field['label_ar'] ?? '' }}"
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold text-right"></textarea>
+                            @elseif(($field['type'] ?? 'text') === 'select')
+                                <select 
+                                    name="{{ $field['id'] }}"
+                                    {{ ($field['required'] ?? false) ? 'required' : '' }}
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold text-right">
+                                    <option value="">{{ $field['placeholder_ar'] ?? 'اختر...' }}</option>
+                                    @if(!empty($field['options']))
+                                        @foreach($field['options'] as $option)
+                                            <option value="{{ $option }}">{{ $option }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            @else
+                                <input 
+                                    type="{{ $field['type'] ?? 'text' }}" 
+                                    name="{{ $field['id'] }}" 
+                                    {{ ($field['required'] ?? false) ? 'required' : '' }}
+                                    placeholder="{{ $field['placeholder_ar'] ?? $field['label_ar'] ?? '' }}"
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-gray-900 font-semibold text-right">
+                            @endif
+                        @endforeach
 
                         <button type="submit" class="w-full bg-gradient-to-r {{ $ctaBg }} text-white font-display text-2xl md:text-3xl uppercase py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-0.5 animate-pulse-scale">
-                            ✓ <span x-text="({ fr: '{{ $i18n['fr']['send_order'] }}', en: '{{ $i18n['en']['send_order'] }}', ar: '{{ $i18n['ar']['send_order'] }}' })[currentLang]">{{ $ctaText }}</span>
+                            ✓ أرسل طلبك
                         </button>
                     </form>
 

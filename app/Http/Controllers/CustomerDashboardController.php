@@ -483,6 +483,43 @@ class CustomerDashboardController extends Controller
         } else {
             $validated['ai_images_status'] = 'none';
         }
+
+        // Handle form fields configuration
+        if ($request->has('form_fields')) {
+            $formFieldsJson = $request->input('form_fields');
+            $formFields = json_decode($formFieldsJson, true);
+
+            // Validate and clean the form fields
+            if (is_array($formFields)) {
+                $cleanedFields = [];
+                foreach ($formFields as $field) {
+                    // Ensure required properties exist
+                    if (!empty($field['id'])) {
+                        $cleanedField = [
+                            'id' => $field['id'],
+                            'type' => $field['type'] ?? 'text',
+                            'label' => $field['label'] ?? '',
+                            'label_fr' => $field['label_fr'] ?? '',
+                            'label_en' => $field['label_en'] ?? '',
+                            'label_ar' => $field['label_ar'] ?? '',
+                            'placeholder_fr' => $field['placeholder_fr'] ?? '',
+                            'placeholder_en' => $field['placeholder_en'] ?? '',
+                            'placeholder_ar' => $field['placeholder_ar'] ?? '',
+                            'required' => !empty($field['required']),
+                        ];
+
+                        // Add options for select type
+                        if ($cleanedField['type'] === 'select' && !empty($field['options'])) {
+                            $cleanedField['options'] = $field['options'];
+                        }
+
+                        $cleanedFields[] = $cleanedField;
+                    }
+                }
+
+                $validated['form_fields'] = $cleanedFields;
+            }
+        }
         
         $product = \App\Models\Product::create($validated);
         

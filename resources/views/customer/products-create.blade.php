@@ -532,6 +532,136 @@
                 </div>
             </div>
 
+            <!-- Landing Page Form Fields -->
+            <div class="bg-[#0f1c2e] border border-white/10 rounded-xl p-6" x-data="formFieldsManager">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">حقول نموذج صفحة الهبوط</h3>
+                        <p class="text-sm text-gray-400 mt-1">تخصيص حقول نموذج الاتصال على صفحة الهبوط الخاصة بك</p>
+                    </div>
+                    <button 
+                        type="button"
+                        @click="addField()"
+                        class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        إضافة حقل
+                    </button>
+                </div>
+
+                <div class="space-y-4 mb-4">
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-blue-300 text-sm">
+                        <strong>ملاحظة:</strong> يمكنك تعديل أو إزالة أي حقل من الحقول أدناه. الحقول المحددة كـ "مطلوب" سيتعين على العملاء ملؤها.
+                    </div>
+                </div>
+
+                <input type="hidden" name="form_fields" x-model="formFieldsJson">
+
+                <template x-if="fields.length === 0">
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>لم يتم إضافة حقول نموذج مخصصة بعد</p>
+                        <p class="text-sm mt-1">انقر على "إضافة حقل" لإنشاء حقول مخصصة لنموذج صفحة الهبوط الخاصة بك</p>
+                    </div>
+                </template>
+
+                <div class="space-y-4">
+                    <template x-for="(field, index) in fields" :key="field.id">
+                        <div class="bg-[#0a1628] border border-white/10 rounded-lg p-4">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                    </svg>
+                                    <h4 class="font-semibold text-white" x-text="'الحقل ' + (index + 1)"></h4>
+                                </div>
+                                <button 
+                                    type="button"
+                                    @click="removeField(index)"
+                                    class="text-red-400 hover:text-red-300 transition"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Field Type -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">نوع الحقل</label>
+                                    <select 
+                                        x-model="field.type"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    >
+                                        <option value="text">نص</option>
+                                        <option value="email">بريد إلكتروني</option>
+                                        <option value="tel">هاتف</option>
+                                        <option value="number">رقم</option>
+                                        <option value="textarea">نص متعدد الأسطر</option>
+                                        <option value="select">قائمة منسدلة</option>
+                                    </select>
+                                </div>
+
+                                <!-- Required -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">مطلوب</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            x-model="field.required"
+                                            class="sr-only peer"
+                                        />
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                        <span class="ml-3 text-sm text-gray-300">حقل مطلوب</span>
+                                    </label>
+                                </div>
+
+                                <!-- Label AR -->
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">التسمية (عربي)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.label_ar"
+                                        placeholder="مثال: العنوان"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Placeholder AR -->
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">النص التوضيحي (عربي)</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="field.placeholder_ar"
+                                        placeholder="مثال: أدخل عنوانك"
+                                        class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    />
+                                </div>
+
+                                <!-- Options for select -->
+                                <template x-if="field.type === 'select'">
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-300 mb-2">الخيارات (مفصولة بفاصلة)</label>
+                                        <input 
+                                            type="text" 
+                                            x-model="field.options_text"
+                                            @input="field.options = field.options_text.split(',').map(o => o.trim()).filter(o => o)"
+                                            placeholder="مثال: الدار البيضاء, الرباط, مراكش"
+                                            class="w-full px-4 py-2 bg-[#0f1c2e] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        />
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
             <!-- Submit Buttons -->
             <div class="flex justify-end gap-4">
                 <a href="{{ route('app.products') }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition">
@@ -1198,6 +1328,77 @@
                     descriptionTextarea.value = quill.root.innerHTML;
                 });
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('formFieldsManager', () => ({
+                fields: [
+                    {
+                        id: 'name',
+                        type: 'text',
+                        label_ar: 'الاسم',
+                        placeholder_ar: 'الاسم',
+                        required: true,
+                        is_default: true,
+                        options: [],
+                        options_text: ''
+                    },
+                    {
+                        id: 'phone',
+                        type: 'tel',
+                        label_ar: 'الهاتف',
+                        placeholder_ar: 'الهاتف',
+                        required: true,
+                        is_default: true,
+                        options: [],
+                        options_text: ''
+                    },
+                    {
+                        id: 'note',
+                        type: 'textarea',
+                        label_ar: 'ملاحظات',
+                        placeholder_ar: 'ملاحظات',
+                        required: false,
+                        is_default: true,
+                        options: [],
+                        options_text: ''
+                    }
+                ],
+                
+                init() {
+                    // Ensure each field has an options_text property for select fields
+                    this.fields = this.fields.map(field => {
+                        if (field.type === 'select' && field.options) {
+                            field.options_text = field.options.join(', ');
+                        }
+                        return field;
+                    });
+                },
+                
+                get formFieldsJson() {
+                    return JSON.stringify(this.fields);
+                },
+                
+                addField() {
+                    this.fields.push({
+                        id: 'field_' + Date.now(),
+                        type: 'text',
+                        label_ar: '',
+                        placeholder_ar: '',
+                        required: false,
+                        options: [],
+                        options_text: ''
+                    });
+                },
+                
+                removeField(index) {
+                    if (confirm('هل أنت متأكد من أنك تريد إزالة هذا الحقل؟')) {
+                        this.fields.splice(index, 1);
+                    }
+                }
+            }));
         });
     </script>
 @endsection
