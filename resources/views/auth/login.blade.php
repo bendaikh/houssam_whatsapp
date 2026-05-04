@@ -7,7 +7,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ url('/houssam/login') }}" class="space-y-6">
+    <form method="POST" action="{{ url('/alfa/login') }}" class="space-y-6">
         @csrf
 
         <!-- Email Address -->
