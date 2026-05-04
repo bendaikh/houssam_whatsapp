@@ -68,15 +68,17 @@ class ProductController extends Controller
             ->limit(4)
             ->get();
 
+        $settings = \App\Models\WebsiteSettings::getSettings($store->user_id, $store->id);
+
         if ($product->theme === 'theme2') {
-            return view('product-landing-theme2', compact('product', 'relatedProducts', 'store'));
+            return view('product-landing-theme2', compact('product', 'relatedProducts', 'store', 'settings'));
         }
 
         if ($product->landing_page_fr || $product->landing_page_en || $product->landing_page_ar) {
-            return view('product-landing', compact('product', 'relatedProducts', 'store'));
+            return view('product-landing', compact('product', 'relatedProducts', 'store', 'settings'));
         }
 
-        return view('product-detail', compact('product', 'relatedProducts', 'store'));
+        return view('product-detail', compact('product', 'relatedProducts', 'store', 'settings'));
     }
 
     public function submitLead(Request $request, $subdomain, $slug)
@@ -162,12 +164,20 @@ class ProductController extends Controller
 
         \App\Jobs\PushOrderToExternalApi::dispatch($lead);
 
-        $successMessages = [
-            'fr' => 'Merci ! Nous vous contactons bientôt.',
-            'en' => 'Thank you! We will contact you soon.',
-            'ar' => 'شكرا لك! سنتصل بك قريبا.',
-        ];
+        return redirect()->route('store.product.thank-you', [$subdomain, $slug]);
+    }
 
-        return back()->with('success', $successMessages[$validated['language']] ?? $successMessages['fr']);
+    public function thankYou($subdomain, $slug)
+    {
+        $store = Store::where('subdomain', $subdomain)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $product = Product::where('slug', $slug)
+            ->where('is_active', true)
+            ->where('store_id', $store->id)
+            ->first();
+
+        return view('thank-you', compact('store', 'product'));
     }
 }

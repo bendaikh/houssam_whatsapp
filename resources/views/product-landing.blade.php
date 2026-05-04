@@ -366,7 +366,7 @@
                         @endif
 
                         <h2 class="text-2xl lg:text-3xl font-black mb-6 text-gray-900 text-center">
-                            تواصل معنا
+                            للطلب المرجو ملئ الاستمارة أدناه
                         </h2>
 
                         <form method="POST" action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" class="space-y-6" dir="rtl">
@@ -435,12 +435,14 @@
                         </form>
 
                         <!-- Alternative Contact Methods -->
+                        @if(isset($settings) && ($settings->whatsapp_number || $settings->contact_phone))
                         <div class="mt-8 pt-8 border-t-2 border-gray-200">
                             <p class="text-gray-700 text-center mb-4 font-semibold">
                                 أو اتصل بنا مباشرة:
                             </p>
                             <div class="grid grid-cols-2 gap-4">
-                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $product->user->phone ?? '') }}?text={{ urlencode('مرحباً، أنا مهتم بـ ' . $product->name) }}" 
+                                @if($settings->whatsapp_number)
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}?text={{ urlencode('مرحباً، أنا مهتم بـ ' . $product->name) }}" 
                                    target="_blank" 
                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -448,16 +450,20 @@
                                     </svg>
                                     <span class="text-sm">واتساب</span>
                                 </a>
+                                @endif
                                 
-                                <a href="tel:{{ $product->user->phone ?? '' }}" 
+                                @if($settings->contact_phone)
+                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $settings->contact_phone) }}" 
                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                     </svg>
                                     <span class="text-sm">اتصل</span>
                                 </a>
+                                @endif
                             </div>
                         </div>
+                        @endif
                     </div>
 
                     <!-- Product Description Content (After Form, Same Column) -->

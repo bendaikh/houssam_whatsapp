@@ -472,8 +472,10 @@
                 <h2 class="text-4xl font-bold text-white mb-6">Ready to Order?</h2>
                 <p class="text-xl text-white/90 mb-8">Contact us now to place your order</p>
                 
+                @if(isset($settings) && ($settings->whatsapp_number || $settings->contact_phone))
                 <div class="grid md:grid-cols-2 gap-6">
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $product->user->phone ?? '') }}?text=Hello, I'm interested in {{ urlencode($product->name) }}" 
+                    @if($settings->whatsapp_number)
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp_number) }}?text=Hello, I'm interested in {{ urlencode($product->name) }}" 
                        target="_blank" 
                        class="flex items-center justify-center gap-3 px-8 py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-lg rounded-full transition shadow-lg hover:shadow-xl">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
@@ -481,13 +483,17 @@
                         </svg>
                         <span>Order via WhatsApp</span>
                     </a>
+                    @endif
                     
-                    <a href="tel:{{ $product->user->phone ?? '' }}" 
+                    @if($settings->contact_phone)
+                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $settings->contact_phone) }}" 
                        class="flex items-center justify-center gap-3 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-full transition shadow-lg hover:shadow-xl">
                         <span class="material-icons text-3xl">phone</span>
                         <span>Call Us</span>
                     </a>
+                    @endif
                 </div>
+                @endif
             </div>
         </div>
     </section>
