@@ -286,6 +286,17 @@
                     </div>
                     @endif
 
+                    @if ($errors->any())
+                    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+                        <p class="font-semibold mb-1 text-center">يرجى تصحيح الأخطاء:</p>
+                        <ul class="list-disc list-inside text-xs text-right">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+
                     @php
                         // Get form fields or use defaults
                         $formFields = $product->form_fields ?? [

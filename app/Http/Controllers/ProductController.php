@@ -92,70 +92,84 @@ class ProductController extends Controller
             ->where('store_id', $store->id)
             ->firstOrFail();
 
-        // Base validation rules
+        // Get form fields - use product's custom fields or defaults
+        $formFields = $product->form_fields ?? [
+            ['id' => 'name', 'type' => 'text', 'required' => true],
+            ['id' => 'phone', 'type' => 'tel', 'required' => true],
+            ['id' => 'note', 'type' => 'textarea', 'required' => false],
+        ];
+
+        // Build validation rules dynamically based on form fields
         $validationRules = [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'note' => 'nullable|string|max:1000',
             'language' => 'required|in:fr,en,ar',
         ];
 
-        // Add validation for custom form fields
+        // Track which fields are standard vs custom
+        $standardFields = ['name', 'phone', 'note'];
         $customFieldsData = [];
-        if (!empty($product->form_fields)) {
-            foreach ($product->form_fields as $field) {
-                $fieldName = 'custom_' . $field['id'];
-                
-                // Build validation rule
-                $rules = [];
-                if ($field['required'] ?? false) {
-                    $rules[] = 'required';
-                } else {
-                    $rules[] = 'nullable';
-                }
-                
-                // Add type-specific validation
-                switch ($field['type']) {
-                    case 'email':
-                        $rules[] = 'email';
-                        $rules[] = 'max:255';
-                        break;
-                    case 'tel':
-                        $rules[] = 'string';
-                        $rules[] = 'max:20';
-                        break;
-                    case 'number':
-                        $rules[] = 'numeric';
-                        break;
-                    case 'textarea':
-                        $rules[] = 'string';
-                        $rules[] = 'max:1000';
-                        break;
-                    default:
-                        $rules[] = 'string';
-                        $rules[] = 'max:255';
-                }
-                
-                $validationRules[$fieldName] = implode('|', $rules);
+
+        foreach ($formFields as $field) {
+            $fieldId = $field['id'];
+            
+            // Build validation rule
+            $rules = [];
+            if ($field['required'] ?? false) {
+                $rules[] = 'required';
+            } else {
+                $rules[] = 'nullable';
             }
+            
+            // Add type-specific validation
+            switch ($field['type'] ?? 'text') {
+                case 'email':
+                    $rules[] = 'email';
+                    $rules[] = 'max:255';
+                    break;
+                case 'tel':
+                    $rules[] = 'string';
+                    $rules[] = 'max:20';
+                    break;
+                case 'number':
+                    $rules[] = 'numeric';
+                    break;
+                case 'textarea':
+                    $rules[] = 'string';
+                    $rules[] = 'max:1000';
+                    break;
+                default:
+                    $rules[] = 'string';
+                    $rules[] = 'max:255';
+            }
+            
+            $validationRules[$fieldId] = implode('|', $rules);
+        }
+
+        // Ensure standard fields have fallback rules if not in form_fields
+        if (!isset($validationRules['name'])) {
+            $validationRules['name'] = 'nullable|string|max:255';
+        }
+        if (!isset($validationRules['phone'])) {
+            $validationRules['phone'] = 'nullable|string|max:20';
+        }
+        if (!isset($validationRules['note'])) {
+            $validationRules['note'] = 'nullable|string|max:1000';
         }
 
         $validated = $request->validate($validationRules);
 
-        // Extract custom fields from validated data
+        // Extract custom fields (fields that aren't standard)
         foreach ($validated as $key => $value) {
-            if (str_starts_with($key, 'custom_')) {
-                $fieldId = substr($key, 7); // Remove 'custom_' prefix
-                $customFieldsData[$fieldId] = $value;
+            if (!in_array($key, $standardFields) && $key !== 'language' && $value !== null) {
+                $customFieldsData[$key] = $value;
             }
         }
 
         $lead = \App\Models\ProductLead::create([
             'product_id' => $product->id,
             'user_id' => $product->user_id,
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'note' => $validated['note'],
+            'name' => $validated['name'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'note' => $validated['note'] ?? null,
             'custom_fields' => !empty($customFieldsData) ? $customFieldsData : null,
             'language' => $validated['language'],
             'ip_address' => $request->ip(),

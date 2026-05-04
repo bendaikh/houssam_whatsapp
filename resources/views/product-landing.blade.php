@@ -369,6 +369,17 @@
                             للطلب المرجو ملئ الاستمارة أدناه
                         </h2>
 
+                        @if ($errors->any())
+                        <div class="mb-6 rounded-xl border-2 border-red-500 bg-red-50 px-4 py-3 text-red-800">
+                            <p class="font-semibold mb-2 text-center">يرجى تصحيح الأخطاء التالية:</p>
+                            <ul class="list-disc list-inside text-sm text-right">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+
                         <form method="POST" action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" class="space-y-6" dir="rtl">
                             @csrf
                             <input type="hidden" name="language" value="ar">
