@@ -51,7 +51,8 @@
         @if($products->count() > 0)
             <!-- Products Table -->
             <div class="bg-[#0f1c2e] border border-white/10 rounded-xl overflow-hidden">
-                <table class="w-full">
+                <div class="overflow-x-auto">
+                <table class="w-full min-w-[1000px]">
                     <thead class="bg-[#0a1628] border-b border-white/10">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Product</th>
@@ -205,6 +206,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Pagination -->

@@ -308,6 +308,9 @@
                     <form action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" method="POST" class="space-y-3" dir="rtl">
                         @csrf
                         <input type="hidden" name="language" value="ar">
+                        
+                        {{-- Hidden inputs for order details --}}
+                        <input type="hidden" name="selected_price" id="selected_price" value="{{ $product->price }}">
 
                         @foreach($formFields as $field)
                             @if(($field['type'] ?? 'text') === 'textarea')

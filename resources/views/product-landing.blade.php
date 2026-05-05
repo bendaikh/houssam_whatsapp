@@ -206,11 +206,24 @@
                 <!-- Right Side: Price, Promotions, Variations & Contact Form (SCROLLS) -->
                 <div class="space-y-6">
                     <!-- Price Display -->
-                    <div class="flex flex-wrap items-center justify-center gap-4">
+                    <div class="flex flex-wrap items-center justify-center gap-4" id="priceDisplayContainer">
                         @if($product->has_variations && $product->activeVariations->isNotEmpty())
                             <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
                                 <div class="text-4xl font-black text-white" id="variationPriceForm">{{ $product->price_range }}</div>
                             </div>
+                        @elseif($product->has_promotions && $product->activePromotions->isNotEmpty())
+                            @php $firstPromotion = $product->activePromotions->first(); @endphp
+                            <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
+                                <div class="text-4xl font-black text-white" id="promotionPriceDisplay">{{ formatPrice($firstPromotion->price) }} <span class="text-xl">DHS</span></div>
+                                @if($product->compare_at_price && $product->compare_at_price > $firstPromotion->price)
+                                <div class="text-sm line-through text-white/70" id="promotionComparePriceDisplay">{{ formatPrice($product->compare_at_price) }} DHS</div>
+                                @endif
+                            </div>
+                            @if($firstPromotion->discount_percentage > 0)
+                            <div class="bg-yellow-400 text-blue-900 px-5 py-2 rounded-xl font-black text-xl shadow-lg" id="promotionDiscountDisplay">
+                                -{{ $firstPromotion->discount_percentage }}%
+                            </div>
+                            @endif
                         @else
                             <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
                                 <div class="text-4xl font-black text-white">{{ formatPrice($product->price) }} <span class="text-xl">DHS</span></div>
@@ -383,6 +396,19 @@
                         <form method="POST" action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" class="space-y-6" dir="rtl">
                             @csrf
                             <input type="hidden" name="language" value="ar">
+                            
+                            {{-- Hidden inputs for order details --}}
+                            @if($product->has_promotions && $product->activePromotions->isNotEmpty())
+                                @php $defaultPromotion = $product->activePromotions->first(); @endphp
+                                <input type="hidden" name="selected_promotion_id" id="selected_promotion_id" value="{{ $defaultPromotion->id }}">
+                                <input type="hidden" name="selected_price" id="selected_price" value="{{ $defaultPromotion->price }}">
+                            @elseif($product->has_variations && $product->activeVariations->isNotEmpty())
+                                @php $defaultVariation = $product->activeVariations->where('is_default', true)->first() ?? $product->activeVariations->first(); @endphp
+                                <input type="hidden" name="selected_variation_id" id="selected_variation_id" value="{{ $defaultVariation->id }}">
+                                <input type="hidden" name="selected_price" id="selected_price" value="{{ $defaultVariation->price }}">
+                            @else
+                                <input type="hidden" name="selected_price" id="selected_price" value="{{ $product->price }}">
+                            @endif
 
                             @php
                                 // Get form fields or use defaults
@@ -837,13 +863,22 @@
 
     @if($product->has_promotions && $product->activePromotions->isNotEmpty())
     <script>
+        // Helper function to format price
+        function formatPriceJs(price) {
+            if (price % 1 === 0) {
+                return price.toFixed(0);
+            } else {
+                return parseFloat(price.toFixed(2)).toString();
+            }
+        }
+        
         // Promotion selection handler for form
         function updatePromotionDisplayForm(radio) {
             const option = radio.closest('.promotion-option-form');
             const minQuantity = parseInt(option.dataset.minQuantity);
             const maxQuantity = option.dataset.maxQuantity ? parseInt(option.dataset.maxQuantity) : null;
             const price = parseFloat(option.dataset.price);
-            const discount = option.dataset.discount;
+            const discount = parseFloat(option.dataset.discount) || 0;
             
             // Remove active state from all options
             document.querySelectorAll('.promotion-option-form').forEach(opt => {
@@ -854,6 +889,33 @@
             // Add active state to selected option
             option.classList.remove('border-white/20');
             option.classList.add('border-yellow-300');
+            
+            // Update the price display
+            const priceDisplay = document.getElementById('promotionPriceDisplay');
+            if (priceDisplay) {
+                priceDisplay.innerHTML = formatPriceJs(price) + ' <span class="text-xl">DHS</span>';
+            }
+            
+            // Update discount badge
+            const discountDisplay = document.getElementById('promotionDiscountDisplay');
+            if (discountDisplay) {
+                if (discount > 0) {
+                    discountDisplay.textContent = '-' + discount + '%';
+                    discountDisplay.style.display = '';
+                } else {
+                    discountDisplay.style.display = 'none';
+                }
+            }
+            
+            // Update hidden input for form submission
+            const hiddenPromotionInput = document.getElementById('selected_promotion_id');
+            if (hiddenPromotionInput) {
+                hiddenPromotionInput.value = option.dataset.promotionId;
+            }
+            const hiddenPriceInput = document.getElementById('selected_price');
+            if (hiddenPriceInput) {
+                hiddenPriceInput.value = price;
+            }
         }
         
         // Set default promotion on page load
@@ -892,6 +954,16 @@
                 let formattedPrice = price % 1 === 0 ? price.toFixed(0) : parseFloat(price.toFixed(2)).toString();
                 let priceHtml = formattedPrice + ' <span class="text-xl">DHS</span>';
                 priceContainer.innerHTML = priceHtml;
+            }
+            
+            // Update hidden input for form submission
+            const hiddenVariationInput = document.getElementById('selected_variation_id');
+            if (hiddenVariationInput) {
+                hiddenVariationInput.value = option.dataset.variationId;
+            }
+            const hiddenPriceInput = document.getElementById('selected_price');
+            if (hiddenPriceInput) {
+                hiddenPriceInput.value = price;
             }
         }
         

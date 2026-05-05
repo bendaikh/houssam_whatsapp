@@ -74,28 +74,7 @@
             </p>
         </div>
         
-        <!-- Back Button -->
-        @if(isset($product) && isset($store))
-        <div class="mt-8">
-            <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" 
-               class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                <span>العودة للمنتج</span>
-            </a>
-        </div>
-        @elseif(isset($store))
-        <div class="mt-8">
-            <a href="{{ route('store.home', $store->subdomain) }}" 
-               class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                <span>تصفح المنتجات</span>
-            </a>
-        </div>
-        @endif
+        {{-- Back button hidden as per request --}}
     </div>
 </body>
 </html>

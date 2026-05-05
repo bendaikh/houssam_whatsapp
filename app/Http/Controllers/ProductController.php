@@ -155,17 +155,40 @@ class ProductController extends Controller
             $validationRules['note'] = 'nullable|string|max:1000';
         }
 
+        // Add validation for order detail fields
+        $validationRules['selected_promotion_id'] = 'nullable|integer|exists:product_promotions,id';
+        $validationRules['selected_variation_id'] = 'nullable|integer|exists:product_variations,id';
+        $validationRules['selected_price'] = 'nullable|numeric|min:0';
+
         $validated = $request->validate($validationRules);
 
         // Extract custom fields (fields that aren't standard)
+        $orderDetailFields = ['selected_promotion_id', 'selected_variation_id', 'selected_price'];
         foreach ($validated as $key => $value) {
-            if (!in_array($key, $standardFields) && $key !== 'language' && $value !== null) {
+            if (!in_array($key, $standardFields) && !in_array($key, $orderDetailFields) && $key !== 'language' && $value !== null) {
                 $customFieldsData[$key] = $value;
+            }
+        }
+
+        // Determine the price if not provided
+        $selectedPrice = $validated['selected_price'] ?? null;
+        if (!$selectedPrice) {
+            if (!empty($validated['selected_promotion_id'])) {
+                $promotion = \App\Models\ProductPromotion::find($validated['selected_promotion_id']);
+                $selectedPrice = $promotion ? $promotion->price : $product->price;
+            } elseif (!empty($validated['selected_variation_id'])) {
+                $variation = \App\Models\ProductVariation::find($validated['selected_variation_id']);
+                $selectedPrice = $variation ? $variation->price : $product->price;
+            } else {
+                $selectedPrice = $product->price;
             }
         }
 
         $lead = \App\Models\ProductLead::create([
             'product_id' => $product->id,
+            'selected_promotion_id' => $validated['selected_promotion_id'] ?? null,
+            'selected_variation_id' => $validated['selected_variation_id'] ?? null,
+            'selected_price' => $selectedPrice,
             'user_id' => $product->user_id,
             'name' => $validated['name'] ?? null,
             'phone' => $validated['phone'] ?? null,
@@ -174,6 +197,7 @@ class ProductController extends Controller
             'language' => $validated['language'],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
+            'status' => 'pending',
         ]);
 
         \App\Jobs\PushOrderToExternalApi::dispatch($lead);

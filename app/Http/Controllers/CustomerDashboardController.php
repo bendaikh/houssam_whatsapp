@@ -287,9 +287,45 @@ class CustomerDashboardController extends Controller
             ->with('anthropic_success', 'Connexion Anthropic réussie.');
     }
     
-    public function orders()
+    public function orders(Request $request)
     {
-        return view('customer.orders');
+        $user = auth()->user();
+        $storeId = $this->getActiveStoreId();
+        
+        $query = \App\Models\ProductLead::with(['product', 'promotion', 'variation'])
+            ->where('user_id', $user->id);
+        
+        if ($storeId) {
+            $query->whereHas('product', function($q) use ($storeId) {
+                $q->where('store_id', $storeId);
+            });
+        }
+        
+        // Filter by status
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by date range
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        
+        // Search by name or phone
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+        
+        $orders = $query->latest()->paginate(20);
+        
+        return view('customer.orders', compact('orders'));
     }
     
     public function products()
@@ -1176,7 +1212,7 @@ class CustomerDashboardController extends Controller
         $user = auth()->user();
         $storeId = $this->getActiveStoreId();
         
-        $leads = \App\Models\ProductLead::with('product')
+        $leads = \App\Models\ProductLead::with(['product', 'promotion', 'variation'])
             ->where('user_id', $user->id)
             ->when($storeId, function($q) use ($storeId) {
                 $q->whereHas('product', function($q) use ($storeId) {
