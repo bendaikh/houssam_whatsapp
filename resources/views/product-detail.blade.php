@@ -26,7 +26,7 @@
             content_ids: ['{{ $product->id }}'],
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'DHS'
+            currency: 'درهم'
         });
     </script>
     <noscript>
@@ -47,7 +47,7 @@
             content_id: '{{ $product->id }}',
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'DHS'
+            currency: 'درهم'
           });
         }(window, document, 'ttq');
     </script>
@@ -55,6 +55,18 @@
     @endif
 </head>
 <body class="antialiased bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
+    @php
+        // Helper function to format price - show decimals only when needed
+        if (!function_exists('formatPriceDetail')) {
+            function formatPriceDetail($price) {
+                if ($price == floor($price)) {
+                    return number_format($price, 0);
+                } else {
+                    return rtrim(rtrim(number_format($price, 2), '0'), '.');
+                }
+            }
+        }
+    @endphp
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,9 +103,9 @@
                                         {{ $product->price_range }}
                                     </div>
                                 @else
-                                    <div class="text-5xl font-bold">{{ number_format($product->price, 2) }} DHS</div>
+                                    <div class="text-5xl font-bold">{{ formatPriceDetail($product->price) }} درهم</div>
                                     @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                    <div class="text-lg line-through text-white/70">{{ number_format($product->compare_at_price, 2) }} DHS</div>
+                                    <div class="text-lg line-through text-white/70">{{ formatPriceDetail($product->compare_at_price) }} درهم</div>
                                     @endif
                                 @endif
                             </div>
@@ -135,7 +147,7 @@
                                                     {{ $promotion->label ?? 'Buy' }} {{ $promotion->quantity_range }}
                                                 </div>
                                                 <div class="text-right">
-                                                    <div class="text-3xl font-bold text-white">{{ number_format($promotion->price, 2) }} <span class="text-base text-white/80">DHS</span></div>
+                                                    <div class="text-3xl font-bold text-white">{{ formatPriceDetail($promotion->price) }} <span class="text-base text-white/80">درهم</span></div>
                                                     @if($promotion->discount_percentage > 0)
                                                     <div class="inline-block text-xs bg-yellow-400 text-purple-900 px-3 py-1 rounded-full font-bold mt-1">
                                                         -{{ $promotion->discount_percentage }}%
@@ -193,9 +205,9 @@
                                                     @endif
                                                 </div>
                                                 <div class="text-right">
-                                                    <div class="text-xl font-bold text-white">{{ number_format($variation->price, 2) }} DHS</div>
+                                                    <div class="text-xl font-bold text-white">{{ formatPriceDetail($variation->price) }} درهم</div>
                                                     @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                                    <div class="text-sm line-through text-white/70">{{ number_format($variation->compare_at_price, 2) }} DHS</div>
+                                                    <div class="text-sm line-through text-white/70">{{ formatPriceDetail($variation->compare_at_price) }} درهم</div>
                                                     @endif
                                                 </div>
                                             </div>
@@ -315,9 +327,9 @@
                                     {{ $product->price_range }}
                                 </div>
                             @else
-                                <div class="text-4xl font-bold text-purple-600">{{ number_format($product->price, 2) }} DHS</div>
+                                <div class="text-4xl font-bold text-purple-600">{{ formatPriceDetail($product->price) }} درهم</div>
                                 @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                <div class="text-lg line-through text-gray-500">{{ number_format($product->compare_at_price, 2) }} DHS</div>
+                                <div class="text-lg line-through text-gray-500">{{ formatPriceDetail($product->compare_at_price) }} درهم</div>
                                 @endif
                             @endif
                         </div>
@@ -359,7 +371,7 @@
                                                 {{ $promotion->label ?? 'Buy' }} {{ $promotion->quantity_range }}
                                             </div>
                                             <div class="text-right">
-                                                <div class="text-3xl font-bold text-gray-800">{{ number_format($promotion->price, 2) }} <span class="text-base text-gray-600">DHS</span></div>
+                                                <div class="text-3xl font-bold text-gray-800">{{ formatPriceDetail($promotion->price) }} <span class="text-base text-gray-600">درهم</span></div>
                                                 @if($promotion->discount_percentage > 0)
                                                 <div class="inline-block text-xs bg-yellow-500 text-white px-3 py-1 rounded-full font-bold mt-1">
                                                     -{{ $promotion->discount_percentage }}%
@@ -418,9 +430,9 @@
                                                 @endif
                                             </div>
                                             <div class="text-right">
-                                                <div class="text-xl font-bold text-purple-600">{{ number_format($variation->price, 2) }} DHS</div>
+                                                <div class="text-xl font-bold text-purple-600">{{ formatPriceDetail($variation->price) }} درهم</div>
                                                 @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                                <div class="text-sm line-through text-gray-500">{{ number_format($variation->compare_at_price, 2) }} DHS</div>
+                                                <div class="text-sm line-through text-gray-500">{{ formatPriceDetail($variation->compare_at_price) }} درهم</div>
                                                 @endif
                                             </div>
                                         </div>
@@ -520,9 +532,9 @@
                         <div class="p-6">
                             <h3 class="font-bold text-xl mb-2 text-gray-900 group-hover:text-purple-600 transition">{{ $related->name }}</h3>
                             <div class="flex items-center gap-3">
-                                <span class="text-2xl font-bold text-purple-600">{{ number_format($related->price, 2) }} DHS</span>
+                                <span class="text-2xl font-bold text-purple-600">{{ formatPriceDetail($related->price) }} درهم</span>
                                 @if($related->compare_at_price)
-                                <span class="text-sm line-through text-gray-500">{{ number_format($related->compare_at_price, 2) }} DHS</span>
+                                <span class="text-sm line-through text-gray-500">{{ formatPriceDetail($related->compare_at_price) }} درهم</span>
                                 @endif
                             </div>
                         </div>
@@ -560,13 +572,18 @@
             option.classList.remove('border-gray-200');
             option.classList.add('border-purple-500', 'bg-purple-50');
             
+            // Helper function to format price - show decimals only when needed
+            function formatPriceJs(p) {
+                return p % 1 === 0 ? p.toFixed(0) : parseFloat(p.toFixed(2)).toString();
+            }
+            
             // Update price display
             const priceContainer = document.getElementById('variationPrice');
             if (priceContainer) {
-                let priceHtml = `<div class="text-4xl font-bold text-purple-600">${price.toFixed(2)} DHS</div>`;
+                let priceHtml = `<div class="text-4xl font-bold text-purple-600">${formatPriceJs(price)} درهم</div>`;
                 
                 if (comparePrice > price) {
-                    priceHtml += `<div class="text-lg line-through text-gray-500">${comparePrice.toFixed(2)} DHS</div>`;
+                    priceHtml += `<div class="text-lg line-through text-gray-500">${formatPriceJs(comparePrice)} درهم</div>`;
                 }
                 
                 priceContainer.innerHTML = priceHtml;
@@ -590,13 +607,18 @@
             option.classList.remove('border-white/30');
             option.classList.add('border-white/60');
             
+            // Helper function to format price - show decimals only when needed
+            function formatPriceHeroJs(p) {
+                return p % 1 === 0 ? p.toFixed(0) : parseFloat(p.toFixed(2)).toString();
+            }
+            
             // Update price display in hero section
             const priceContainer = document.getElementById('variationPriceHero');
             if (priceContainer) {
-                let priceHtml = `<div class="text-5xl font-bold">${price.toFixed(2)} DHS</div>`;
+                let priceHtml = `<div class="text-5xl font-bold">${formatPriceHeroJs(price)} درهم</div>`;
                 
                 if (comparePrice > price) {
-                    priceHtml += `<div class="text-lg line-through text-white/70">${comparePrice.toFixed(2)} DHS</div>`;
+                    priceHtml += `<div class="text-lg line-through text-white/70">${formatPriceHeroJs(comparePrice)} درهم</div>`;
                 }
                 
                 priceContainer.innerHTML = priceHtml;

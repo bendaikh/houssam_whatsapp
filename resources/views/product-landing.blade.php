@@ -27,7 +27,7 @@
             content_ids: ['{{ $product->id }}'],
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'DHS'
+            currency: 'درهم'
         });
     </script>
     <noscript>
@@ -48,7 +48,7 @@
             content_id: '{{ $product->id }}',
             content_type: 'product',
             value: {{ $product->price }},
-            currency: 'DHS'
+            currency: 'درهم'
           });
         }(window, document, 'ttq');
     </script>
@@ -214,9 +214,9 @@
                         @elseif($product->has_promotions && $product->activePromotions->isNotEmpty())
                             @php $firstPromotion = $product->activePromotions->first(); @endphp
                             <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
-                                <div class="text-4xl font-black text-white" id="promotionPriceDisplay">{{ formatPrice($firstPromotion->price) }} <span class="text-xl">DHS</span></div>
+                                <div class="text-4xl font-black text-white" id="promotionPriceDisplay">{{ formatPrice($firstPromotion->price) }} <span class="text-xl">درهم</span></div>
                                 @if($product->compare_at_price && $product->compare_at_price > $firstPromotion->price)
-                                <div class="text-sm line-through text-white/70" id="promotionComparePriceDisplay">{{ formatPrice($product->compare_at_price) }} DHS</div>
+                                <div class="text-sm line-through text-white/70" id="promotionComparePriceDisplay">{{ formatPrice($product->compare_at_price) }} درهم</div>
                                 @endif
                             </div>
                             @if($firstPromotion->discount_percentage > 0)
@@ -226,9 +226,9 @@
                             @endif
                         @else
                             <div class="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/30">
-                                <div class="text-4xl font-black text-white">{{ formatPrice($product->price) }} <span class="text-xl">DHS</span></div>
+                                <div class="text-4xl font-black text-white">{{ formatPrice($product->price) }} <span class="text-xl">درهم</span></div>
                                 @if($product->compare_at_price && $product->compare_at_price > $product->price)
-                                <div class="text-sm line-through text-white/70">{{ formatPrice($product->compare_at_price) }} DHS</div>
+                                <div class="text-sm line-through text-white/70">{{ formatPrice($product->compare_at_price) }} درهم</div>
                                 @endif
                             </div>
                             @if($product->discount_percentage)
@@ -273,7 +273,7 @@
                                             {{ $promotion->quantity_range }}
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <span class="text-2xl font-black text-white">{{ formatPrice($promotion->price) }} DHS</span>
+                                            <span class="text-2xl font-black text-white">{{ formatPrice($promotion->price) }} درهم</span>
                                             @if($promotion->discount_percentage > 0)
                                             <span class="text-xs bg-yellow-400 text-blue-900 px-2 py-1 rounded-full font-bold">
                                                 -{{ $promotion->discount_percentage }}%
@@ -331,9 +331,9 @@
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-2xl font-black text-white">{{ formatPrice($variation->price) }} DHS</div>
+                                            <div class="text-2xl font-black text-white">{{ formatPrice($variation->price) }} درهم</div>
                                             @if($variation->compare_at_price && $variation->compare_at_price > $variation->price)
-                                            <div class="text-xs line-through text-white/70">{{ formatPrice($variation->compare_at_price) }} DHS</div>
+                                            <div class="text-xs line-through text-white/70">{{ formatPrice($variation->compare_at_price) }} درهم</div>
                                             @endif
                                         </div>
                                     </div>
@@ -359,7 +359,7 @@
                                     content_ids: ['{{ $product->id }}'],
                                     content_type: 'product',
                                     value: {{ $product->price }},
-                                    currency: 'DHS'
+                                    currency: 'درهم'
                                 });
                             </script>
                             @endif
@@ -372,7 +372,7 @@
                                     content_id: '{{ $product->id }}',
                                     content_type: 'product',
                                     value: {{ $product->price }},
-                                    currency: 'DHS'
+                                    currency: 'درهم'
                                 });
                             </script>
                             @endif
@@ -893,7 +893,7 @@
             // Update the price display
             const priceDisplay = document.getElementById('promotionPriceDisplay');
             if (priceDisplay) {
-                priceDisplay.innerHTML = formatPriceJs(price) + ' <span class="text-xl">DHS</span>';
+                priceDisplay.innerHTML = formatPriceJs(price) + ' <span class="text-xl">درهم</span>';
             }
             
             // Update discount badge
@@ -952,7 +952,7 @@
             if (priceContainer) {
                 // Format price - show decimals only when needed
                 let formattedPrice = price % 1 === 0 ? price.toFixed(0) : parseFloat(price.toFixed(2)).toString();
-                let priceHtml = formattedPrice + ' <span class="text-xl">DHS</span>';
+                let priceHtml = formattedPrice + ' <span class="text-xl">درهم</span>';
                 priceContainer.innerHTML = priceHtml;
             }
             

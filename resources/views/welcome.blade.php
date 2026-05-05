@@ -57,6 +57,18 @@
     </style>
 </head>
 <body class="antialiased bg-white text-gray-900">
+    @php
+        // Helper function to format price - show decimals only when needed
+        if (!function_exists('formatPriceWelcome')) {
+            function formatPriceWelcome($price) {
+                if ($price == floor($price)) {
+                    return number_format($price, 0);
+                } else {
+                    return rtrim(rtrim(number_format($price, 2), '0'), '.');
+                }
+            }
+        }
+    @endphp
     <!-- Preview Mode Banner -->
     @if(isset($isPreview) && $isPreview)
     <div class="fixed top-0 left-0 right-0 z-[100] bg-yellow-500 text-black py-2 px-4 text-center font-bold shadow-lg">
@@ -116,7 +128,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 min-h-[500px] flex items-center" 
+    <section class="relative pt-8 md:pt-16 pb-0 px-4 sm:px-6 lg:px-8 min-h-[auto] md:min-h-[500px] flex items-center" 
         @if($settings->hero_background_image)
             style="background-image: url('{{ url('storage/' . $settings->hero_background_image) }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
         @else
@@ -129,11 +141,11 @@
         @endif
         
         <div class="container mx-auto max-w-7xl relative z-10">
-            <div class="text-center mb-12">
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 {{ $settings->hero_background_image ? 'text-white' : 'text-gray-900' }}">
+            <div class="text-center mb-4 md:mb-12">
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-3 md:mb-6 {{ $settings->hero_background_image ? 'text-white' : 'text-gray-900' }}">
                     {{ $settings->hero_title ?? 'مرحباً بكم في متجرنا' }}
                 </h1>
-                <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed {{ $settings->hero_background_image ? 'text-white' : 'text-gray-600' }}">
+                <p class="text-lg md:text-2xl mb-4 md:mb-8 max-w-4xl mx-auto leading-relaxed {{ $settings->hero_background_image ? 'text-white' : 'text-gray-600' }}">
                     {!! nl2br(e($settings->hero_subtitle ?? 'مرحباً بكم في متجرنا، وجهتكم الأولى لاكتشاف منتجات فريدة تم اختيارها بعناية لتناسب احتياجاتكم اليومية وتمنحكم تجربة تسوق استثنائية. معنا ستجدون كل ما هو مميز ونادر في السوق.')) !!}
                 </p>
                 <a href="#featured" class="inline-flex items-center justify-center px-8 py-4 text-white text-lg font-semibold rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" style="background-color: {{ $settings->primary_color }}">
@@ -145,18 +157,18 @@
     </section>
 
     <!-- Categories Section -->
-    <section id="categories" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="categories" class="-mt-0 pt-0 pb-8 md:pb-16 md:py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div class="container mx-auto max-w-7xl">
-            <div class="flex items-center justify-center mb-12">
+            <div class="flex items-center justify-center mb-6 md:mb-12">
                 <span class="material-icons text-4xl ml-3" style="color: {{ $settings->accent_color }}">auto_awesome</span>
                 <div>
                     <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">فئاتنا</h2>
                     <p class="text-gray-600">اختر حسب الفئة</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 @foreach($categories as $category)
-                <a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}#products" class="group bg-gradient-to-br rounded-xl p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
+                <a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}#products" class="group bg-gradient-to-br rounded-xl p-4 md:p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
                     <span class="material-icons text-5xl mb-4" style="color: {{ $category->color }}">{{ $category->icon }}</span>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $category->name }}</h3>
                     <span class="material-icons text-gray-400">arrow_forward_ios</span>
@@ -195,15 +207,15 @@
                         @endif
                     </div>
                     <div class="p-6">
-                        <div class="flex items-baseline gap-2 mb-3">
-                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} درهم</span>
+                        <div class="flex items-baseline gap-2 mb-3 justify-center">
+                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ formatPriceWelcome($product->price) }} درهم</span>
                             @if($product->compare_at_price)
-                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} درهم</span>
+                            <span class="text-gray-400 line-through text-sm">{{ formatPriceWelcome($product->compare_at_price) }} درهم</span>
                             @endif
                         </div>
-                        <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2">{{ $product->name }}</h3>
+                        <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2 text-center">{{ $product->name }}</h3>
                         <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
-                            عرض التفاصيل
+                            اشتري الآن
                         </a>
                     </div>
                 </div>
@@ -261,16 +273,16 @@
                         @endif
                     </div>
                     <div class="p-6">
-                        <div class="text-sm text-gray-500 mb-2">{{ $product->category->name ?? 'غير مصنف' }}</div>
-                        <div class="flex items-baseline gap-2 mb-3">
-                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ number_format($product->price, 2) }} درهم</span>
+                        <div class="text-sm text-gray-500 mb-2 text-center">{{ $product->category->name ?? 'غير مصنف' }}</div>
+                        <div class="flex items-baseline gap-2 mb-3 justify-center">
+                            <span class="text-2xl font-bold" style="color: {{ $settings->primary_color }}">{{ formatPriceWelcome($product->price) }} درهم</span>
                             @if($product->compare_at_price)
-                            <span class="text-gray-400 line-through text-sm">{{ number_format($product->compare_at_price, 2) }} درهم</span>
+                            <span class="text-gray-400 line-through text-sm">{{ formatPriceWelcome($product->compare_at_price) }} درهم</span>
                             @endif
                         </div>
-                        <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2">{{ $product->name }}</h3>
+                        <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2 text-center">{{ $product->name }}</h3>
                         <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
-                            عرض التفاصيل
+                            اشتري الآن
                         </a>
                     </div>
                 </div>

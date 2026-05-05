@@ -348,16 +348,13 @@ class CustomerDashboardController extends Controller
     
     public function productsSelectTheme()
     {
-        return view('customer.products-select-theme');
+        // Theme selection removed - redirect to products create with theme1
+        return redirect()->route('app.products.create', ['theme' => 'theme1']);
     }
 
     public function productsCreate(Request $request)
     {
-        $theme = $request->query('theme', 'theme1');
-        
-        if (!in_array($theme, ['theme1', 'theme2'])) {
-            return redirect()->route('app.products.select-theme');
-        }
+        $theme = 'theme1'; // Always use theme1
         
         $storeId = $this->getActiveStoreId();
         
@@ -369,9 +366,7 @@ class CustomerDashboardController extends Controller
         
         $categories = $query->orderBy('order')->orderBy('name')->get();
         
-        $viewName = $theme === 'theme2' ? 'customer.products-create-theme2' : 'customer.products-create';
-        
-        return view($viewName, compact('categories', 'theme'));
+        return view('customer.products-create', compact('categories', 'theme'));
     }
     
     public function productsStore(Request $request)
@@ -412,7 +407,7 @@ class CustomerDashboardController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'theme' => 'nullable|string|in:theme1,theme2',
+            'theme' => 'nullable|string|in:theme1',
             'theme_data' => 'nullable|array',
             'price' => $hasVariations ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0',

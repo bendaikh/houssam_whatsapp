@@ -12,53 +12,13 @@
                 </h2>
                 <p class="text-sm text-gray-400 mt-1">Add a new product to your catalog</p>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('app.products.select-theme') }}" class="px-4 py-2 bg-gray-700/50 hover:bg-gray-700 text-white font-medium rounded-lg transition flex items-center gap-2 text-sm border border-white/10">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                    </svg>
-                    Change Theme
-                </a>
-                <a href="{{ route('app.products') }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Back to Products
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Selected Theme Badge -->
-    <div class="mb-6 bg-[#0f1c2e] border border-white/10 rounded-xl p-4 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-lg flex items-center justify-center {{ $theme === 'theme2' ? 'bg-cyan-500/20' : 'bg-emerald-500/20' }}">
-                <svg class="w-6 h-6 {{ $theme === 'theme2' ? 'text-cyan-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            <a href="{{ route('app.products') }}" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-            </div>
-            <div>
-                <h3 class="text-white font-semibold flex items-center gap-2">
-                    @if($theme === 'theme2')
-                        Theme 2 - E-Commerce Style
-                        <span class="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded">Selected</span>
-                    @else
-                        Theme 1 - Classic Layout
-                        <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">Selected</span>
-                    @endif
-                </h3>
-                <p class="text-sm text-gray-400">
-                    @if($theme === 'theme2')
-                        High-converting sales page with trust badges and social proof
-                    @else
-                        Clean, professional product page with AI-generated sections
-                    @endif
-                </p>
-            </div>
+                Back to Products
+            </a>
         </div>
-        <a href="{{ route('app.products.select-theme') }}" class="text-sm text-gray-400 hover:text-white transition">
-            Change &rarr;
-        </a>
     </div>
 
     @if(session('success'))
