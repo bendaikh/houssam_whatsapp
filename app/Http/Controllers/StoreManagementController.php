@@ -171,4 +171,66 @@ class StoreManagementController extends Controller
             return redirect()->route('stores.dashboard')->with('success', 'Custom domain removed. Store is accessible via subdomain.');
         }
     }
+    
+    public function duplicate(Store $store)
+    {
+        $this->authorize('view', $store);
+        
+        // Create a copy of the store with a new name and subdomain
+        $newStore = $store->replicate();
+        $newStore->name = $store->name . ' (Copy)';
+        $newStore->subdomain = $store->subdomain . '-copy-' . time();
+        $newStore->domain = null; // Reset domain for the copy
+        $newStore->save();
+        
+        // Duplicate all products from the original store
+        $products = \App\Models\Product::where('store_id', $store->id)->get();
+        
+        foreach ($products as $product) {
+            $newProduct = $product->replicate();
+            $newProduct->store_id = $newStore->id;
+            $newProduct->slug = $product->slug . '-copy-' . time();
+            $newProduct->save();
+            
+            // Duplicate product variations if any
+            if ($product->has_variations) {
+                foreach ($product->variations as $variation) {
+                    $newVariation = $variation->replicate();
+                    $newVariation->product_id = $newProduct->id;
+                    $newVariation->save();
+                }
+            }
+            
+            // Duplicate product promotions if any
+            if ($product->has_promotions) {
+                foreach ($product->promotions as $promotion) {
+                    $newPromotion = $promotion->replicate();
+                    $newPromotion->product_id = $newProduct->id;
+                    $newPromotion->save();
+                }
+            }
+        }
+        
+        // Duplicate categories
+        $categories = \App\Models\Category::where('store_id', $store->id)->get();
+        $categoryMapping = []; // Map old category IDs to new ones
+        
+        foreach ($categories as $category) {
+            $newCategory = $category->replicate();
+            $newCategory->store_id = $newStore->id;
+            $newCategory->slug = $category->slug . '-copy-' . time();
+            $newCategory->save();
+            
+            $categoryMapping[$category->id] = $newCategory->id;
+        }
+        
+        // Update category references in duplicated products
+        foreach (\App\Models\Product::where('store_id', $newStore->id)->get() as $product) {
+            if ($product->category_id && isset($categoryMapping[$product->category_id])) {
+                $product->update(['category_id' => $categoryMapping[$product->category_id]]);
+            }
+        }
+        
+        return redirect()->route('stores.dashboard')->with('success', 'Store "' . $store->name . '" duplicated successfully with all ' . $products->count() . ' products!');
+    }
 }

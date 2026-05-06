@@ -186,7 +186,7 @@
                 <!-- Left Side: Title + Image (STICKY - stays when scrolling) -->
                 <div class="lg:sticky lg:top-8 self-start space-y-8">
                     <!-- Title Only -->
-                    <div class="text-white">
+                    <div class="text-white text-center">
                         <h1 class="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight drop-shadow-lg">
                             {{ $product->name }}
                         </h1>

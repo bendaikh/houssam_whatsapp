@@ -87,6 +87,7 @@ Route::middleware(['auth', 'require.workspace'])->prefix('stores')->name('stores
     Route::delete('/{store}', [\App\Http\Controllers\StoreManagementController::class, 'destroy'])->name('destroy');
     Route::post('/{store}/switch', [\App\Http\Controllers\StoreManagementController::class, 'switchStore'])->name('switch');
     Route::put('/{store}/domain', [\App\Http\Controllers\StoreManagementController::class, 'updateDomain'])->name('update-domain');
+    Route::post('/{store}/duplicate', [\App\Http\Controllers\StoreManagementController::class, 'duplicate'])->name('duplicate');
 });
 
 // Main App Routes (for all authenticated users) - requires active workspace and store selection

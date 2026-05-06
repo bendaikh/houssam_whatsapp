@@ -115,10 +115,58 @@
                             value="{{ old('name') }}"
                             class="w-full px-4 py-3 bg-[#0a1628] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             placeholder="Enter product name"
+                            oninput="updateSlugFromName(this.value)"
                         />
                         @error('name')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Product Slug & Landing Page URL Preview -->
+                    <div>
+                        <label for="slug" class="block text-sm font-medium text-gray-300 mb-2">
+                            URL Slug
+                            <span class="text-xs text-gray-500 ml-2">(auto-generated from name, you can modify it)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="slug" 
+                            name="slug" 
+                            value="{{ old('slug') }}"
+                            class="w-full px-4 py-3 bg-[#0a1628] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            placeholder="product-url-slug"
+                            oninput="updateLandingPageUrl()"
+                        />
+                        @error('slug')
+                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        @enderror
+                        
+                        <!-- Landing Page URL Preview -->
+                        @if($store)
+                        <div class="mt-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                                <span class="text-sm font-medium text-emerald-400">Landing Page URL Preview</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <code id="landingPageUrl" class="flex-1 text-sm text-emerald-300 bg-[#0a1628] px-3 py-2 rounded border border-emerald-500/20 break-all">
+                                    {{ url('/store/' . $store->subdomain . '/product/') }}/<span id="slugPreview" class="text-yellow-300">your-product-slug</span>
+                                </code>
+                                <button type="button" onclick="copyLandingPageUrl()" class="p-2 text-emerald-400 hover:text-emerald-300 transition" title="Copy URL">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">This is the direct link to your product's landing page. Share it in ads or social media.</p>
+                        </div>
+                        @else
+                        <div class="mt-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                            <p class="text-sm text-yellow-400">Select a store to see the landing page URL preview.</p>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Description -->
@@ -642,6 +690,67 @@
         let uploadedFiles = [];
         let variationCounter = 0;
         let promotionCounter = 0;
+
+        // Slug generation and URL preview functions
+        function slugify(text) {
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')           // Replace spaces with -
+                .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+                .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+                .replace(/^-+/, '')             // Trim - from start of text
+                .replace(/-+$/, '');            // Trim - from end of text
+        }
+
+        function updateSlugFromName(name) {
+            const slugInput = document.getElementById('slug');
+            // Only auto-update if the user hasn't manually edited the slug
+            if (!slugInput.dataset.manuallyEdited) {
+                slugInput.value = slugify(name);
+                updateLandingPageUrl();
+            }
+        }
+
+        function updateLandingPageUrl() {
+            const slugInput = document.getElementById('slug');
+            const slugPreview = document.getElementById('slugPreview');
+            
+            if (slugPreview) {
+                const slug = slugInput.value || 'your-product-slug';
+                slugPreview.textContent = slug;
+            }
+        }
+
+        function copyLandingPageUrl() {
+            const slugInput = document.getElementById('slug');
+            const slug = slugInput.value || 'your-product-slug';
+            const baseUrl = '{{ $store ? url("/store/" . $store->subdomain . "/product/") : "" }}';
+            const fullUrl = baseUrl + '/' + slug;
+            
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                // Show a brief notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                notification.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    URL copied to clipboard!
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+            });
+        }
+
+        // Mark slug as manually edited when user types in it
+        document.addEventListener('DOMContentLoaded', function() {
+            const slugInput = document.getElementById('slug');
+            if (slugInput) {
+                slugInput.addEventListener('input', function() {
+                    this.dataset.manuallyEdited = 'true';
+                    updateLandingPageUrl();
+                });
+            }
+        });
 
         function togglePromotions(enabled) {
             const promotionsContent = document.getElementById('promotionsContent');

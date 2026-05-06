@@ -355,18 +355,19 @@ class CustomerDashboardController extends Controller
     public function productsCreate(Request $request)
     {
         $theme = 'theme1'; // Always use theme1
-        
+
         $storeId = $this->getActiveStoreId();
-        
+        $store = $storeId ? \App\Models\Store::find($storeId) : null;
+
         $query = \App\Models\Category::where('is_active', true);
-        
+
         if ($storeId) {
             $query->where('store_id', $storeId);
         }
-        
+
         $categories = $query->orderBy('order')->orderBy('name')->get();
-        
-        return view('customer.products-create', compact('categories', 'theme'));
+
+        return view('customer.products-create', compact('categories', 'theme', 'store'));
     }
     
     public function productsStore(Request $request)
@@ -406,6 +407,7 @@ class CustomerDashboardController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|alpha_dash',
             'description' => 'nullable|string',
             'theme' => 'nullable|string|in:theme1',
             'theme_data' => 'nullable|array',
@@ -445,7 +447,10 @@ class CustomerDashboardController extends Controller
         $validated['store_id'] = $this->getActiveStoreId();
         $validated['theme'] = $validated['theme'] ?? 'theme1';
         $validated['theme_data'] = $request->input('theme_data');
-        $validated['slug'] = \Str::slug($validated['name']) . '-' . time();
+        // Use provided slug or generate from name with timestamp to ensure uniqueness
+        $validated['slug'] = !empty($validated['slug']) 
+            ? \Str::slug($validated['slug']) 
+            : \Str::slug($validated['name']) . '-' . time();
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
         $validated['has_variations'] = $hasVariations;
