@@ -27,7 +27,7 @@ class PushOrderToExternalApi implements ShouldQueue
      */
     public function handle(): void
     {
-        $lead = $this->lead->fresh(['product', 'variation']);
+        $lead = $this->lead->fresh(['product.store.websiteSettings', 'variation']);
         
         if (!$lead) {
             Log::warning('Lead not found for pushing to external API');
@@ -49,9 +49,12 @@ class PushOrderToExternalApi implements ShouldQueue
         }
 
         $product = $lead->product;
+        $store = $product?->store;
+        $websiteSettings = $store?->websiteSettings;
         $sku = $lead->variation?->sku ?? $product?->sku;
         $itemPrice = (float) ($lead->selected_price ?? $product?->price ?? 0);
         $productName = $product?->name ?? 'Product from ChatEasy';
+        $website = $this->buildWebsitePayload($store, $websiteSettings, $product, $user);
 
         // Format data according to external API requirements
         // Note: product_id must exist in the external system, using 1 as default
@@ -59,6 +62,7 @@ class PushOrderToExternalApi implements ShouldQueue
             'client_name' => $lead->name,
             'client_phone' => $lead->phone,
             'source' => 'whatsapp', // Required: manual, shopify, google_sheet, delivery_company, marketplace, whatsapp
+            'website' => $website,
             'items' => [
                 [
                     'product_id' => 1, // Default product in external system
@@ -68,14 +72,16 @@ class PushOrderToExternalApi implements ShouldQueue
                     'price' => $itemPrice,
                 ]
             ],
-            'notes' => ($lead->note ?? '') . "\n[ChatEasy Product: " . $productName . ($sku ? " | SKU: {$sku}" : '') . "]",
+            'notes' => ($lead->note ?? '') . "\n[ChatEasy Product: " . $productName . ($sku ? " | SKU: {$sku}" : '') . ($website['name'] ? " | Website: {$website['name']}" : '') . "]",
             'metadata' => [
                 'chateasy_lead_id' => $lead->id,
                 'chateasy_product_id' => $lead->product_id,
                 'chateasy_variation_id' => $lead->selected_variation_id,
+                'chateasy_store_id' => $store?->id,
                 'sku' => $sku,
                 'language' => $lead->language,
                 'created_at' => $lead->created_at->toIso8601String(),
+                'website' => $website,
             ]
         ];
 
@@ -93,5 +99,75 @@ class PushOrderToExternalApi implements ShouldQueue
                 'error' => $result['message']
             ]);
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function buildWebsitePayload($store, $websiteSettings, $product, $user): array
+    {
+        if (!$store) {
+            return [
+                'id' => null,
+                'name' => null,
+                'store_name' => null,
+                'subdomain' => null,
+                'domain' => null,
+                'url' => null,
+                'product_url' => null,
+                'owner' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'company_name' => $user->company_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                ],
+                'contact' => [
+                    'phone' => null,
+                    'email' => null,
+                ],
+            ];
+        }
+
+        $websiteUrl = $this->buildStoreWebsiteUrl($store);
+        $productUrl = $product
+            ? route('store.product.show', [$store->subdomain, $product->slug])
+            : null;
+
+        return [
+            'id' => $store->id,
+            'name' => $websiteSettings?->site_name ?? $store->name,
+            'store_name' => $store->name,
+            'subdomain' => $store->subdomain,
+            'domain' => $store->domain,
+            'url' => $websiteUrl,
+            'product_url' => $productUrl,
+            'owner' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'company_name' => $user->company_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ],
+            'contact' => [
+                'phone' => $websiteSettings?->contact_phone,
+                'email' => $websiteSettings?->contact_email,
+            ],
+        ];
+    }
+
+    protected function buildStoreWebsiteUrl($store): string
+    {
+        if ($store->domain) {
+            $domain = trim($store->domain);
+
+            if (!preg_match('#^https?://#i', $domain)) {
+                $domain = 'https://' . $domain;
+            }
+
+            return rtrim($domain, '/');
+        }
+
+        return url('/store/' . $store->subdomain);
     }
 }

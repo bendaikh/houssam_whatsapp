@@ -158,6 +158,26 @@
   "client_name": "string",
   "client_phone": "string",
   "source": "whatsapp",
+  "website": {
+    "id": "number",
+    "name": "string",
+    "store_name": "string",
+    "subdomain": "string",
+    "domain": "string|null",
+    "url": "string",
+    "product_url": "string",
+    "owner": {
+      "id": "number",
+      "name": "string",
+      "company_name": "string",
+      "email": "string",
+      "phone": "string"
+    },
+    "contact": {
+      "phone": "string",
+      "email": "string"
+    }
+  },
   "items": [{
     "product_id": "number",
     "sku": "string",
@@ -170,9 +190,11 @@
     "chateasy_lead_id": "number",
     "chateasy_product_id": "number",
     "chateasy_variation_id": "number|null",
+    "chateasy_store_id": "number|null",
     "sku": "string",
     "language": "fr|en|ar",
-    "created_at": "ISO8601"
+    "created_at": "ISO8601",
+    "website": { "...": "same as top-level website object" }
   }
 }</code></pre>
                 </div>
