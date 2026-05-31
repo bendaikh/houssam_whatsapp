@@ -155,16 +155,25 @@
                 <h3 class="text-lg font-semibold text-white mb-4">Order Data Structure</h3>
                 <div class="bg-[#0a1628] border border-white/5 rounded-lg p-3">
                     <pre class="text-xs text-gray-300 overflow-x-auto"><code>{
-  "customer_name": "string",
-  "customer_phone": "string",
-  "product_id": "number",
-  "product_name": "string",
-  "product_price": "number",
-  "note": "string",
-  "language": "fr|en|ar",
-  "source": "landing_page",
-  "lead_id": "number",
-  "created_at": "ISO8601"
+  "client_name": "string",
+  "client_phone": "string",
+  "source": "whatsapp",
+  "items": [{
+    "product_id": "number",
+    "sku": "string",
+    "name": "string",
+    "quantity": "number",
+    "price": "number"
+  }],
+  "notes": "string",
+  "metadata": {
+    "chateasy_lead_id": "number",
+    "chateasy_product_id": "number",
+    "chateasy_variation_id": "number|null",
+    "sku": "string",
+    "language": "fr|en|ar",
+    "created_at": "ISO8601"
+  }
 }</code></pre>
                 </div>
             </div>

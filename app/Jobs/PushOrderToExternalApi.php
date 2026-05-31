@@ -27,7 +27,7 @@ class PushOrderToExternalApi implements ShouldQueue
      */
     public function handle(): void
     {
-        $lead = $this->lead->fresh();
+        $lead = $this->lead->fresh(['product', 'variation']);
         
         if (!$lead) {
             Log::warning('Lead not found for pushing to external API');
@@ -48,6 +48,11 @@ class PushOrderToExternalApi implements ShouldQueue
             return;
         }
 
+        $product = $lead->product;
+        $sku = $lead->variation?->sku ?? $product?->sku;
+        $itemPrice = (float) ($lead->selected_price ?? $product?->price ?? 0);
+        $productName = $product?->name ?? 'Product from ChatEasy';
+
         // Format data according to external API requirements
         // Note: product_id must exist in the external system, using 1 as default
         $orderData = [
@@ -57,15 +62,18 @@ class PushOrderToExternalApi implements ShouldQueue
             'items' => [
                 [
                     'product_id' => 1, // Default product in external system
-                    'name' => $lead->product->name ?? 'Product from ChatEasy',
+                    'sku' => $sku,
+                    'name' => $productName,
                     'quantity' => 1,
-                    'price' => (float) ($lead->product->price ?? 0),
+                    'price' => $itemPrice,
                 ]
             ],
-            'notes' => ($lead->note ?? '') . "\n[ChatEasy Product: " . ($lead->product->name ?? 'N/A') . "]",
+            'notes' => ($lead->note ?? '') . "\n[ChatEasy Product: " . $productName . ($sku ? " | SKU: {$sku}" : '') . "]",
             'metadata' => [
                 'chateasy_lead_id' => $lead->id,
                 'chateasy_product_id' => $lead->product_id,
+                'chateasy_variation_id' => $lead->selected_variation_id,
+                'sku' => $sku,
                 'language' => $lead->language,
                 'created_at' => $lead->created_at->toIso8601String(),
             ]
