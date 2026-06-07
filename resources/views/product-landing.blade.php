@@ -9,32 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    @if($store->facebook_pixel_enabled && $store->facebook_pixel_id)
-    <!-- Facebook Pixel Code -->
-    <script>
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '{{ $store->facebook_pixel_id }}');
-        fbq('track', 'PageView');
-        fbq('track', 'ViewContent', {
-            content_name: '{{ addslashes($product->name) }}',
-            content_ids: ['{{ $product->id }}'],
-            content_type: 'product',
-            value: {{ $product->price }},
-            currency: 'درهم'
-        });
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $store->facebook_pixel_id }}&ev=PageView&noscript=1"/>
-    </noscript>
-    <!-- End Facebook Pixel Code -->
-    @endif
+    @include('partials.facebook-pixels', [
+        'store' => $store,
+        'facebookPixelEvents' => [[
+            'name' => 'ViewContent',
+            'params' => [
+                'content_name' => $product->name,
+                'content_ids' => [(string) $product->id],
+                'content_type' => 'product',
+                'value' => (float) $product->price,
+                'currency' => 'MAD',
+            ],
+        ]],
+    ])
     
     @if($store->tiktok_pixel_enabled && $store->tiktok_pixel_id)
     <!-- TikTok Pixel Code -->
@@ -351,16 +338,21 @@
                                 {{ session('success') }}
                             </div>
                             
-                            @if($store->facebook_pixel_enabled && $store->facebook_pixel_id)
-                            <!-- Facebook Pixel Lead Conversion Event -->
+                            @php
+                                $hasFacebookPixels = ($store->activeFacebookPixels ?? collect())->isNotEmpty()
+                                    || ($store->facebook_pixel_enabled && $store->facebook_pixel_id);
+                            @endphp
+                            @if($hasFacebookPixels)
                             <script>
-                                fbq('track', 'Lead', {
-                                    content_name: '{{ addslashes($product->name) }}',
-                                    content_ids: ['{{ $product->id }}'],
-                                    content_type: 'product',
-                                    value: {{ $product->price }},
-                                    currency: 'درهم'
-                                });
+                                if (typeof fbq === 'function') {
+                                    fbq('track', 'Lead', {
+                                        content_name: @json($product->name),
+                                        content_ids: [@json((string) $product->id)],
+                                        content_type: 'product',
+                                        value: {{ (float) $product->price }},
+                                        currency: 'MAD'
+                                    });
+                                }
                             </script>
                             @endif
                             
@@ -393,7 +385,7 @@
                         </div>
                         @endif
 
-                        <form method="POST" action="{{ route('store.product.submit-lead', [$store->subdomain, $product->slug]) }}" class="space-y-6" dir="rtl">
+                        <form method="POST" action="{{ \App\Support\StoreDomain::submitLeadUrl($store, $product->slug) }}" class="space-y-6" dir="rtl">
                             @csrf
                             <input type="hidden" name="language" value="ar">
                             

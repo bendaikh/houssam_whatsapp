@@ -27,7 +27,7 @@ class PushOrderToExternalApi implements ShouldQueue
      */
     public function handle(): void
     {
-        $lead = $this->lead->fresh(['product.store.websiteSettings', 'variation']);
+        $lead = $this->lead->fresh(['product.store.websiteSettings', 'variation', 'promotion']);
         
         if (!$lead) {
             Log::warning('Lead not found for pushing to external API');
@@ -54,6 +54,7 @@ class PushOrderToExternalApi implements ShouldQueue
         $sku = $lead->variation?->sku ?? $product?->sku;
         $itemPrice = (float) ($lead->selected_price ?? $product?->price ?? 0);
         $productName = $product?->name ?? 'Product from ChatEasy';
+        $quantity = $lead->order_quantity;
         $website = $this->buildWebsitePayload($store, $websiteSettings, $product, $user);
 
         // Format data according to external API requirements
@@ -68,7 +69,7 @@ class PushOrderToExternalApi implements ShouldQueue
                     'product_id' => 1, // Default product in external system
                     'sku' => $sku,
                     'name' => $productName,
-                    'quantity' => 1,
+                    'quantity' => $quantity,
                     'price' => $itemPrice,
                 ]
             ],
@@ -77,6 +78,8 @@ class PushOrderToExternalApi implements ShouldQueue
                 'chateasy_lead_id' => $lead->id,
                 'chateasy_product_id' => $lead->product_id,
                 'chateasy_variation_id' => $lead->selected_variation_id,
+                'chateasy_promotion_id' => $lead->selected_promotion_id,
+                'quantity' => $quantity,
                 'chateasy_store_id' => $store?->id,
                 'sku' => $sku,
                 'language' => $lead->language,

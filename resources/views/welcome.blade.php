@@ -16,25 +16,7 @@
     <link rel="icon" href="/storage/{{ $settings->site_favicon }}">
     @endif
     
-    @if($store->facebook_pixel_enabled && $store->facebook_pixel_id)
-    <!-- Facebook Pixel Code -->
-    <script>
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '{{ $store->facebook_pixel_id }}');
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $store->facebook_pixel_id }}&ev=PageView&noscript=1"/>
-    </noscript>
-    <!-- End Facebook Pixel Code -->
-    @endif
+    @include('partials.facebook-pixels', ['store' => $store])
     
     @if($store->tiktok_pixel_enabled && $store->tiktok_pixel_id)
     <!-- TikTok Pixel Code -->
@@ -97,13 +79,13 @@
                     @if($settings->site_logo)
                     <img src="/storage/{{ $settings->site_logo }}" alt="{{ $settings->site_name }}" class="h-12">
                     @else
-                    <a href="{{ route('store.home', $store->subdomain) }}" class="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-blue-600 bg-clip-text text-transparent">
+                    <a href="{{ \App\Support\StoreDomain::homeUrl($store) }}" class="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-blue-600 bg-clip-text text-transparent">
                         {{ $settings->site_name }}
                     </a>
                     @endif
                 </div>
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="{{ route('store.home', $store->subdomain) }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">الرئيسية</a>
+                    <a href="{{ \App\Support\StoreDomain::homeUrl($store) }}" class="text-gray-700 hover:text-emerald-600 font-medium transition">الرئيسية</a>
                     <a href="#categories" class="text-gray-700 hover:text-emerald-600 font-medium transition">الفئات</a>
                     <a href="#featured" class="text-gray-700 hover:text-emerald-600 font-medium transition">المميزة</a>
                     <a href="#contact" class="text-gray-700 hover:text-emerald-600 font-medium transition">اتصل بنا</a>
@@ -168,7 +150,7 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 @foreach($categories as $category)
-                <a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}#products" class="group bg-gradient-to-br rounded-xl p-4 md:p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
+                <a href="{{ \App\Support\StoreDomain::categoryHomeUrl($store, $category->slug) }}#products" class="group bg-gradient-to-br rounded-xl p-4 md:p-8 text-center hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1" style="background: linear-gradient(to bottom right, {{ $category->color }}20, {{ $category->color }}10)">
                     <span class="material-icons text-5xl mb-4" style="color: {{ $category->color }}">{{ $category->icon }}</span>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $category->name }}</h3>
                     <span class="material-icons text-gray-400">arrow_forward_ios</span>
@@ -214,7 +196,7 @@
                             @endif
                         </div>
                         <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2 text-center">{{ $product->name }}</h3>
-                        <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
+                        <a href="{{ \App\Support\StoreDomain::productUrl($store, $product->slug) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
                             اشتري الآن
                         </a>
                     </div>
@@ -247,7 +229,7 @@
             
             @if($activeCategory)
             <div class="text-center mb-8">
-                <a href="{{ route('store.home', $store->subdomain) }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
+                <a href="{{ \App\Support\StoreDomain::homeUrl($store) }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
                     <span class="material-icons ml-2 text-sm">close</span>
                     إزالة الفلتر
                 </a>
@@ -281,7 +263,7 @@
                             @endif
                         </div>
                         <h3 class="font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition line-clamp-2 text-center">{{ $product->name }}</h3>
-                        <a href="{{ route('store.product.show', [$store->subdomain, $product->slug]) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
+                        <a href="{{ \App\Support\StoreDomain::productUrl($store, $product->slug) }}" class="block w-full py-3 text-white text-center rounded-lg font-medium transition" style="background-color: {{ $settings->primary_color }}">
                             اشتري الآن
                         </a>
                     </div>
@@ -401,14 +383,14 @@
                     <h3 class="font-bold text-lg mb-4">الفئات</h3>
                     <ul class="space-y-2 text-sm text-gray-400">
                         @foreach($categories->take(4) as $category)
-                        <li><a href="{{ route('store.home', ['subdomain' => $store->subdomain, 'category' => $category->slug]) }}" class="hover:text-emerald-400 transition">{{ $category->name }}</a></li>
+                        <li><a href="{{ \App\Support\StoreDomain::categoryHomeUrl($store, $category->slug) }}" class="hover:text-emerald-400 transition">{{ $category->name }}</a></li>
                         @endforeach
                     </ul>
                 </div>
                 <div>
                     <h3 class="font-bold text-lg mb-4">روابط سريعة</h3>
                     <ul class="space-y-2 text-sm text-gray-400">
-                        <li><a href="{{ route('store.home', $store->subdomain) }}" class="hover:text-emerald-400 transition">الرئيسية</a></li>
+                        <li><a href="{{ \App\Support\StoreDomain::homeUrl($store) }}" class="hover:text-emerald-400 transition">الرئيسية</a></li>
                         <li><a href="#featured" class="hover:text-emerald-400 transition">المنتجات المميزة</a></li>
                         <li><a href="#contact" class="hover:text-emerald-400 transition">اتصل بنا</a></li>
                     </ul>

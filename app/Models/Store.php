@@ -63,4 +63,19 @@ class Store extends Model
     {
         return $this->hasOne(WebsiteSettings::class);
     }
+
+    public function facebookPixels()
+    {
+        return $this->hasMany(FacebookPixel::class);
+    }
+
+    public function activeFacebookPixels()
+    {
+        return $this->hasMany(FacebookPixel::class)->where('is_enabled', true);
+    }
+
+    public function blockedIps()
+    {
+        return $this->hasMany(BlockedIp::class);
+    }
 }

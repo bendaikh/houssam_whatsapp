@@ -248,6 +248,13 @@
                         </svg>
                         <span class="text-sm font-medium">Pixel Connect</span>
                     </a>
+
+                    <a href="{{ route('app.blocked-ips') }}" class="{{ request()->routeIs('app.blocked-ips*') ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-400 hover:bg-white/5' }} flex items-center gap-3 px-3 py-2.5 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                        </svg>
+                        <span class="text-sm font-medium">Adresses IP bloquées</span>
+                    </a>
                     
                     <!-- Social Media API Integration Section -->
                     <div>

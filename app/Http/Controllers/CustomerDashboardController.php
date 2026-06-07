@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\AiLandingPageService;
 use App\Jobs\GenerateProductLandingPageJob;
+use App\Support\LandingFormFields;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
@@ -17,6 +18,19 @@ class CustomerDashboardController extends Controller
     protected function getActiveStoreId()
     {
         return session('active_store_id');
+    }
+
+    protected function getBlockedIpAddresses(): array
+    {
+        $storeId = $this->getActiveStoreId();
+
+        if (!$storeId) {
+            return [];
+        }
+
+        return \App\Models\BlockedIp::where('store_id', $storeId)
+            ->pluck('ip_address')
+            ->all();
     }
 
     public function dashboard()
@@ -324,10 +338,54 @@ class CustomerDashboardController extends Controller
         }
         
         $orders = $query->latest()->paginate(20);
-        
-        return view('customer.orders', compact('orders'));
+        $blockedIpAddresses = $this->getBlockedIpAddresses();
+
+        return view('customer.orders', compact('orders', 'blockedIpAddresses'));
     }
-    
+
+    public function editOrder(\App\Models\ProductLead $lead)
+    {
+        $this->authorizeLead($lead);
+
+        $lead->load(['product', 'promotion', 'variation']);
+
+        return view('customer.orders-edit', compact('lead'));
+    }
+
+    public function updateOrder(Request $request, \App\Models\ProductLead $lead)
+    {
+        $this->authorizeLead($lead);
+
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'note' => 'nullable|string|max:1000',
+            'status' => 'required|in:pending,confirmed,shipped,delivered,cancelled',
+        ]);
+
+        $lead->update($validated);
+
+        return redirect()
+            ->route('app.orders')
+            ->with('success', 'Commande mise à jour avec succès.');
+    }
+
+    protected function authorizeLead(\App\Models\ProductLead $lead): void
+    {
+        $user = auth()->user();
+        $storeId = $this->getActiveStoreId();
+
+        if ($lead->user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($storeId && $lead->product && $lead->product->store_id != $storeId) {
+            abort(403);
+        }
+    }
+
     public function products()
     {
         $user = auth()->user();
@@ -527,33 +585,7 @@ class CustomerDashboardController extends Controller
 
             // Validate and clean the form fields
             if (is_array($formFields)) {
-                $cleanedFields = [];
-                foreach ($formFields as $field) {
-                    // Ensure required properties exist
-                    if (!empty($field['id'])) {
-                        $cleanedField = [
-                            'id' => $field['id'],
-                            'type' => $field['type'] ?? 'text',
-                            'label' => $field['label'] ?? '',
-                            'label_fr' => $field['label_fr'] ?? '',
-                            'label_en' => $field['label_en'] ?? '',
-                            'label_ar' => $field['label_ar'] ?? '',
-                            'placeholder_fr' => $field['placeholder_fr'] ?? '',
-                            'placeholder_en' => $field['placeholder_en'] ?? '',
-                            'placeholder_ar' => $field['placeholder_ar'] ?? '',
-                            'required' => !empty($field['required']),
-                        ];
-
-                        // Add options for select type
-                        if ($cleanedField['type'] === 'select' && !empty($field['options'])) {
-                            $cleanedField['options'] = $field['options'];
-                        }
-
-                        $cleanedFields[] = $cleanedField;
-                    }
-                }
-
-                $validated['form_fields'] = $cleanedFields;
+                $validated['form_fields'] = LandingFormFields::cleanFields($formFields);
             }
         }
         
@@ -794,32 +826,7 @@ class CustomerDashboardController extends Controller
             
             // Validate and clean the form fields
             if (is_array($formFields)) {
-                $cleanedFields = [];
-                foreach ($formFields as $field) {
-                    // Ensure required properties exist
-                    if (!empty($field['id'])) {
-                        $cleanedField = [
-                            'id' => $field['id'],
-                            'type' => $field['type'] ?? 'text',
-                            'label' => $field['label'] ?? '',
-                            'label_fr' => $field['label_fr'] ?? '',
-                            'label_en' => $field['label_en'] ?? '',
-                            'label_ar' => $field['label_ar'] ?? '',
-                            'placeholder_fr' => $field['placeholder_fr'] ?? '',
-                            'placeholder_en' => $field['placeholder_en'] ?? '',
-                            'placeholder_ar' => $field['placeholder_ar'] ?? '',
-                            'required' => !empty($field['required']),
-                        ];
-                        
-                        // Add options for select type
-                        if ($cleanedField['type'] === 'select' && !empty($field['options'])) {
-                            $cleanedField['options'] = $field['options'];
-                        }
-                        
-                        $cleanedFields[] = $cleanedField;
-                    }
-                }
-                $validated['form_fields'] = $cleanedFields;
+                $validated['form_fields'] = LandingFormFields::cleanFields($formFields);
             }
         }
         
@@ -1221,8 +1228,10 @@ class CustomerDashboardController extends Controller
             })
             ->latest()
             ->paginate(20);
+
+        $blockedIpAddresses = $this->getBlockedIpAddresses();
         
-        return view('customer.leads', compact('leads'));
+        return view('customer.leads', compact('leads', 'blockedIpAddresses'));
     }
     
     public function categories()

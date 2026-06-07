@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Store;
+use App\Support\StoreDomain;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -50,7 +51,12 @@ class StoreManagementController extends Controller
         $currentStoreId = session('active_store_id');
         
         if ($view === 'list') {
-            return view('stores.list', compact('stores', 'stats', 'currentStoreId', 'activeWorkspace'));
+            $domainConfig = [
+                'platform_domain' => StoreDomain::platformDomain(),
+                'server_ip' => StoreDomain::serverIp(),
+            ];
+
+            return view('stores.list', compact('stores', 'stats', 'currentStoreId', 'activeWorkspace', 'domainConfig'));
         }
         
         return view('stores.overview', compact('stores', 'stats', 'currentStoreId', 'activeWorkspace'));
@@ -156,12 +162,7 @@ class StoreManagementController extends Controller
             'domain' => 'nullable|string|max:255|unique:stores,domain,' . $store->id,
         ]);
         
-        // Clean up the domain (remove http://, https://, www. if user included them)
-        $domain = $validated['domain'] ?? null;
-        if ($domain) {
-            $domain = preg_replace('#^https?://#', '', $domain);
-            $domain = trim($domain);
-        }
+        $domain = StoreDomain::cleanInput($validated['domain'] ?? null);
         
         $store->update(['domain' => $domain]);
         

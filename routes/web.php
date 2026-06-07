@@ -25,9 +25,13 @@ Route::get('/storage/{path}', function ($path) {
     ]);
 })->where('path', '.*')->name('storage.serve');
 
-Route::get('/', function () {
+Route::get('/', function (\Illuminate\Http\Request $request) {
+    if ($request->attributes->get('resolved_store')) {
+        return app(\App\Http\Controllers\ProductController::class)->customDomainHome($request);
+    }
+
     return view('coming-soon');
-})->name('coming-soon');
+})->middleware('check.blocked.ip')->name('coming-soon');
 
 // Secret login route - only accessible via /alfa/login
 Route::get('/alfa/login', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'create'])
@@ -37,10 +41,18 @@ Route::get('/alfa/login', [\App\Http\Controllers\Auth\AuthenticatedSessionContro
 Route::post('/alfa/login', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store'])
     ->middleware('guest');
 
-Route::get('/store/{subdomain}', [ProductController::class, 'index'])->name('store.home');
-Route::get('/store/{subdomain}/product/{slug}', [ProductController::class, 'show'])->name('store.product.show');
-Route::post('/store/{subdomain}/product/{slug}/submit-lead', [ProductController::class, 'submitLead'])->name('store.product.submit-lead');
-Route::get('/store/{subdomain}/product/{slug}/thank-you', [ProductController::class, 'thankYou'])->name('store.product.thank-you');
+Route::middleware('check.blocked.ip')->group(function () {
+    Route::middleware('require.custom.domain')->group(function () {
+        Route::get('/product/{slug}', [ProductController::class, 'customDomainShow'])->name('domain.store.product.show');
+        Route::post('/product/{slug}/submit-lead', [ProductController::class, 'customDomainSubmitLead'])->name('domain.store.product.submit-lead');
+        Route::get('/product/{slug}/thank-you', [ProductController::class, 'customDomainThankYou'])->name('domain.store.product.thank-you');
+    });
+
+    Route::get('/store/{subdomain}', [ProductController::class, 'index'])->name('store.home');
+    Route::get('/store/{subdomain}/product/{slug}', [ProductController::class, 'show'])->name('store.product.show');
+    Route::post('/store/{subdomain}/product/{slug}/submit-lead', [ProductController::class, 'submitLead'])->name('store.product.submit-lead');
+    Route::get('/store/{subdomain}/product/{slug}/thank-you', [ProductController::class, 'thankYou'])->name('store.product.thank-you');
+});
 
 // WhatsApp Webhook (no auth required for external services)
 Route::post('/webhook/whatsapp', [WhatsAppController::class, 'webhook'])->name('whatsapp.webhook');
@@ -97,6 +109,8 @@ Route::middleware(['auth', 'require.workspace', 'require.store'])->prefix('app')
     Route::get('/conversations', [CustomerDashboardController::class, 'conversations'])->name('conversations');
     Route::get('/conversations/{id}', [CustomerDashboardController::class, 'conversationDetail'])->name('conversation.detail');
     Route::get('/orders', [CustomerDashboardController::class, 'orders'])->name('orders');
+    Route::get('/orders/{lead}/edit', [CustomerDashboardController::class, 'editOrder'])->name('orders.edit');
+    Route::put('/orders/{lead}', [CustomerDashboardController::class, 'updateOrder'])->name('orders.update');
     Route::get('/products', [CustomerDashboardController::class, 'products'])->name('products');
     Route::get('/products/select-theme', [CustomerDashboardController::class, 'productsSelectTheme'])->name('products.select-theme');
     Route::get('/products/create', [CustomerDashboardController::class, 'productsCreate'])->name('products.create');
@@ -156,10 +170,18 @@ Route::middleware(['auth', 'require.workspace', 'require.store'])->prefix('app')
     
     // Pixel Connect
     Route::get('/pixel-connect', [\App\Http\Controllers\PixelConnectController::class, 'index'])->name('pixel-connect');
-    Route::post('/pixel-connect/facebook', [\App\Http\Controllers\PixelConnectController::class, 'saveFacebookPixel'])->name('pixel-connect.facebook.save');
-    Route::post('/pixel-connect/facebook/disconnect', [\App\Http\Controllers\PixelConnectController::class, 'disconnectFacebookPixel'])->name('pixel-connect.facebook.disconnect');
+    Route::post('/pixel-connect/facebook', [\App\Http\Controllers\PixelConnectController::class, 'storeFacebookPixel'])->name('pixel-connect.facebook.save');
+    Route::put('/pixel-connect/facebook/{facebookPixel}', [\App\Http\Controllers\PixelConnectController::class, 'updateFacebookPixel'])->name('pixel-connect.facebook.update');
+    Route::post('/pixel-connect/facebook/{facebookPixel}/toggle', [\App\Http\Controllers\PixelConnectController::class, 'toggleFacebookPixel'])->name('pixel-connect.facebook.toggle');
+    Route::delete('/pixel-connect/facebook/{facebookPixel}', [\App\Http\Controllers\PixelConnectController::class, 'deleteFacebookPixel'])->name('pixel-connect.facebook.delete');
     Route::post('/pixel-connect/tiktok', [\App\Http\Controllers\PixelConnectController::class, 'saveTikTokPixel'])->name('pixel-connect.tiktok.save');
     Route::post('/pixel-connect/tiktok/disconnect', [\App\Http\Controllers\PixelConnectController::class, 'disconnectTikTokPixel'])->name('pixel-connect.tiktok.disconnect');
+
+    // Blocked IPs
+    Route::get('/blocked-ips', [\App\Http\Controllers\BlockedIpController::class, 'index'])->name('blocked-ips');
+    Route::post('/blocked-ips', [\App\Http\Controllers\BlockedIpController::class, 'store'])->name('blocked-ips.store');
+    Route::post('/blocked-ips/reactivate', [\App\Http\Controllers\BlockedIpController::class, 'reactivate'])->name('blocked-ips.reactivate');
+    Route::delete('/blocked-ips/{blockedIp}', [\App\Http\Controllers\BlockedIpController::class, 'destroy'])->name('blocked-ips.destroy');
     
     // WhatsApp Routes
     Route::post('/whatsapp/generate-qr', [WhatsAppController::class, 'generateQrCode'])->name('whatsapp.generate-qr');

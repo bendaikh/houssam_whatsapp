@@ -4,29 +4,97 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Store;
+use App\Support\LandingFormFields;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function customDomainHome(Request $request)
+    {
+        $store = $this->resolvedStore($request);
+
+        return $this->renderStoreHome($store, $request);
+    }
+
+    public function customDomainShow(Request $request, $slug)
+    {
+        $store = $this->resolvedStore($request);
+
+        return $this->renderProductShow($store, $slug);
+    }
+
+    public function customDomainSubmitLead(Request $request, $slug)
+    {
+        $store = $this->resolvedStore($request);
+
+        return $this->processLeadSubmission($request, $store, $slug, true);
+    }
+
+    public function customDomainThankYou(Request $request, $slug)
+    {
+        $store = $this->resolvedStore($request);
+
+        return $this->renderThankYou($store, $slug);
+    }
+
     public function index($subdomain, Request $request)
     {
-        $store = Store::where('subdomain', $subdomain)
-            ->where('is_active', true)
-            ->firstOrFail();
-        
-        $settings = \App\Models\WebsiteSettings::getSettings($store->user_id, $store->id);
-        
-        if (!$settings) {
-            $settings = \App\Models\WebsiteSettings::getSettings($store->user_id, $store->id);
+        $store = $this->storeFromSubdomain($subdomain);
+
+        return $this->renderStoreHome($store, $request);
+    }
+
+    public function show($subdomain, $slug)
+    {
+        $store = $this->storeFromSubdomain($subdomain);
+
+        return $this->renderProductShow($store, $slug);
+    }
+
+    public function submitLead(Request $request, $subdomain, $slug)
+    {
+        $store = $this->storeFromSubdomain($subdomain);
+
+        return $this->processLeadSubmission($request, $store, $slug, false);
+    }
+
+    public function thankYou($subdomain, $slug)
+    {
+        $store = $this->storeFromSubdomain($subdomain);
+
+        return $this->renderThankYou($store, $slug);
+    }
+
+    private function resolvedStore(Request $request): Store
+    {
+        $store = $request->attributes->get('resolved_store');
+
+        if (!$store) {
+            abort(404);
         }
-        
+
+        return $store->load('activeFacebookPixels');
+    }
+
+    private function storeFromSubdomain(string $subdomain): Store
+    {
+        return Store::where('subdomain', $subdomain)
+            ->where('is_active', true)
+            ->with('activeFacebookPixels')
+            ->firstOrFail();
+    }
+
+    private function renderStoreHome(Store $store, Request $request)
+    {
+        $settings = \App\Models\WebsiteSettings::getSettings($store->user_id, $store->id);
+
         $query = Product::with('category')
             ->where('is_active', true)
             ->where('store_id', $store->id);
 
         if ($request->has('category')) {
-            $query->whereHas('category', function($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
@@ -49,12 +117,8 @@ class ProductController extends Controller
         return view('welcome', compact('products', 'categories', 'featuredProducts', 'settings', 'store'));
     }
 
-    public function show($subdomain, $slug)
+    private function renderProductShow(Store $store, string $slug)
     {
-        $store = Store::where('subdomain', $subdomain)
-            ->where('is_active', true)
-            ->firstOrFail();
-
         $product = Product::with(['activeVariations', 'activePromotions'])
             ->where('slug', $slug)
             ->where('is_active', true)
@@ -77,12 +141,8 @@ class ProductController extends Controller
         return view('product-detail', compact('product', 'relatedProducts', 'store', 'settings'));
     }
 
-    public function submitLead(Request $request, $subdomain, $slug)
+    private function processLeadSubmission(Request $request, Store $store, string $slug, bool $customDomain)
     {
-        $store = Store::where('subdomain', $subdomain)
-            ->where('is_active', true)
-            ->firstOrFail();
-        
         $product = Product::where('slug', $slug)
             ->where('is_active', true)
             ->where('store_id', $store->id)
@@ -102,6 +162,7 @@ class ProductController extends Controller
 
         // Track which fields are standard vs custom
         $standardFields = ['name', 'phone', 'note'];
+        $systemFieldIds = LandingFormFields::systemFieldIds();
         $customFieldsData = [];
 
         foreach ($formFields as $field) {
@@ -160,11 +221,22 @@ class ProductController extends Controller
 
         // Extract custom fields (fields that aren't standard)
         $orderDetailFields = ['selected_promotion_id', 'selected_variation_id', 'selected_price'];
+        $excludedFromCustom = array_merge(
+            $standardFields,
+            $systemFieldIds,
+            $orderDetailFields,
+            ['language']
+        );
+
         foreach ($validated as $key => $value) {
-            if (!in_array($key, $standardFields) && !in_array($key, $orderDetailFields) && $key !== 'language' && $value !== null) {
+            if (!in_array($key, $excludedFromCustom, true) && $value !== null) {
                 $customFieldsData[$key] = $value;
             }
         }
+
+        $locationData = LandingFormFields::extractLocationData($formFields, $validated);
+        $city = $locationData['city'];
+        $address = $locationData['address'];
 
         // Determine the price if not provided
         $selectedPrice = $validated['selected_price'] ?? null;
@@ -188,6 +260,8 @@ class ProductController extends Controller
             'user_id' => $product->user_id,
             'name' => $validated['name'] ?? null,
             'phone' => $validated['phone'] ?? null,
+            'city' => $city,
+            'address' => $address,
             'note' => $validated['note'] ?? null,
             'custom_fields' => !empty($customFieldsData) ? $customFieldsData : null,
             'language' => $validated['language'],
@@ -198,15 +272,15 @@ class ProductController extends Controller
 
         \App\Jobs\PushOrderToExternalApi::dispatch($lead);
 
-        return redirect()->route('store.product.thank-you', [$subdomain, $slug]);
+        if ($customDomain) {
+            return redirect()->route('domain.store.product.thank-you', $slug);
+        }
+
+        return redirect()->route('store.product.thank-you', [$store->subdomain, $slug]);
     }
 
-    public function thankYou($subdomain, $slug)
+    private function renderThankYou(Store $store, string $slug)
     {
-        $store = Store::where('subdomain', $subdomain)
-            ->where('is_active', true)
-            ->firstOrFail();
-
         $product = Product::where('slug', $slug)
             ->where('is_active', true)
             ->where('store_id', $store->id)

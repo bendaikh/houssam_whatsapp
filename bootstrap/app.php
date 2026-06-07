@@ -15,9 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'require.workspace' => \App\Http\Middleware\RequireActiveWorkspace::class,
             'require.store' => \App\Http\Middleware\RequireActiveStore::class,
+            'check.blocked.ip' => \App\Http\Middleware\CheckBlockedIp::class,
+            'require.custom.domain' => \App\Http\Middleware\RequireCustomDomain::class,
         ]);
         
         $middleware->web(append: [
+            \App\Http\Middleware\DetectCustomDomain::class,
             \App\Http\Middleware\SetActiveStore::class,
         ]);
         

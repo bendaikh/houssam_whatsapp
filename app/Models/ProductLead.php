@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductLead extends Model
 {
+    public const RESERVED_CUSTOM_FIELD_KEYS = [
+        'city',
+        'ville',
+        'address',
+        'adresse',
+    ];
+
     protected $fillable = [
         'product_id',
         'selected_promotion_id',
@@ -14,6 +21,8 @@ class ProductLead extends Model
         'user_id',
         'name',
         'phone',
+        'city',
+        'address',
         'note',
         'custom_fields',
         'language',
@@ -45,5 +54,47 @@ class ProductLead extends Model
     public function variation()
     {
         return $this->belongsTo(ProductVariation::class, 'selected_variation_id');
+    }
+
+    public function getCityAttribute($value): ?string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        $customFields = $this->custom_fields ?? [];
+
+        return $customFields['city'] ?? $customFields['ville'] ?? null;
+    }
+
+    public function getAddressAttribute($value): ?string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        $customFields = $this->custom_fields ?? [];
+
+        return $customFields['address'] ?? $customFields['adresse'] ?? null;
+    }
+
+    public function getDisplayCustomFieldsAttribute(): array
+    {
+        $customFields = $this->custom_fields ?? [];
+
+        return array_filter(
+            $customFields,
+            fn ($key) => !in_array($key, self::RESERVED_CUSTOM_FIELD_KEYS, true),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
+
+    public function getOrderQuantityAttribute(): int
+    {
+        if ($this->promotion) {
+            return max(1, (int) $this->promotion->min_quantity);
+        }
+
+        return 1;
     }
 }
