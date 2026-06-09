@@ -121,6 +121,11 @@ class StoreDomain
         return route('store.product.submit-lead', [$store->subdomain, $slug]);
     }
 
+    public static function thankYouUrl(): string
+    {
+        return route('thank-you');
+    }
+
     public static function categoryHomeUrl(Store $store, string $categorySlug): string
     {
         if (self::isCurrentCustomDomainRequest($store)) {

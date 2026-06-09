@@ -333,43 +333,6 @@
 
                     <!-- Contact Form (White Box) -->
                     <div id="order-form" class="bg-white rounded-2xl p-8 lg:p-10 shadow-2xl">
-                        @if (session('success'))
-                            <div class="mb-6 rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 text-green-800 text-center font-semibold">
-                                {{ session('success') }}
-                            </div>
-                            
-                            @php
-                                $hasFacebookPixels = ($store->activeFacebookPixels ?? collect())->isNotEmpty()
-                                    || ($store->facebook_pixel_enabled && $store->facebook_pixel_id);
-                            @endphp
-                            @if($hasFacebookPixels)
-                            <script>
-                                if (typeof fbq === 'function') {
-                                    fbq('track', 'Lead', {
-                                        content_name: @json($product->name),
-                                        content_ids: [@json((string) $product->id)],
-                                        content_type: 'product',
-                                        value: {{ (float) $product->price }},
-                                        currency: 'MAD'
-                                    });
-                                }
-                            </script>
-                            @endif
-                            
-                            @if($store->tiktok_pixel_enabled && $store->tiktok_pixel_id)
-                            <!-- TikTok Pixel Lead Conversion Event -->
-                            <script>
-                                ttq.track('SubmitForm', {
-                                    content_name: '{{ addslashes($product->name) }}',
-                                    content_id: '{{ $product->id }}',
-                                    content_type: 'product',
-                                    value: {{ $product->price }},
-                                    currency: 'درهم'
-                                });
-                            </script>
-                            @endif
-                        @endif
-
                         <h2 class="text-2xl lg:text-3xl font-black mb-6 text-gray-900 text-center">
                             للطلب المرجو ملئ الاستمارة أدناه
                         </h2>

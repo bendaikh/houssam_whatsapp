@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ThankYouController;
 use App\Http\Controllers\SocialMediaAdsController;
 use App\Http\Controllers\SuperAdminController;
 use Illuminate\Support\Facades\Route;
@@ -42,16 +43,18 @@ Route::post('/alfa/login', [\App\Http\Controllers\Auth\AuthenticatedSessionContr
     ->middleware('guest');
 
 Route::middleware('check.blocked.ip')->group(function () {
+    Route::get('/thank-you', [ThankYouController::class, 'show'])->name('thank-you');
+
     Route::middleware('require.custom.domain')->group(function () {
         Route::get('/product/{slug}', [ProductController::class, 'customDomainShow'])->name('domain.store.product.show');
         Route::post('/product/{slug}/submit-lead', [ProductController::class, 'customDomainSubmitLead'])->name('domain.store.product.submit-lead');
-        Route::get('/product/{slug}/thank-you', [ProductController::class, 'customDomainThankYou'])->name('domain.store.product.thank-you');
+        Route::redirect('/product/{slug}/thank-you', '/thank-you');
     });
 
     Route::get('/store/{subdomain}', [ProductController::class, 'index'])->name('store.home');
     Route::get('/store/{subdomain}/product/{slug}', [ProductController::class, 'show'])->name('store.product.show');
     Route::post('/store/{subdomain}/product/{slug}/submit-lead', [ProductController::class, 'submitLead'])->name('store.product.submit-lead');
-    Route::get('/store/{subdomain}/product/{slug}/thank-you', [ProductController::class, 'thankYou'])->name('store.product.thank-you');
+    Route::redirect('/store/{subdomain}/product/{slug}/thank-you', '/thank-you');
 });
 
 // WhatsApp Webhook (no auth required for external services)

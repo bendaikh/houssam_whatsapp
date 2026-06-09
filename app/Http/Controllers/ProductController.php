@@ -28,14 +28,7 @@ class ProductController extends Controller
     {
         $store = $this->resolvedStore($request);
 
-        return $this->processLeadSubmission($request, $store, $slug, true);
-    }
-
-    public function customDomainThankYou(Request $request, $slug)
-    {
-        $store = $this->resolvedStore($request);
-
-        return $this->renderThankYou($store, $slug);
+        return $this->processLeadSubmission($request, $store, $slug);
     }
 
     public function index($subdomain, Request $request)
@@ -56,14 +49,7 @@ class ProductController extends Controller
     {
         $store = $this->storeFromSubdomain($subdomain);
 
-        return $this->processLeadSubmission($request, $store, $slug, false);
-    }
-
-    public function thankYou($subdomain, $slug)
-    {
-        $store = $this->storeFromSubdomain($subdomain);
-
-        return $this->renderThankYou($store, $slug);
+        return $this->processLeadSubmission($request, $store, $slug);
     }
 
     private function resolvedStore(Request $request): Store
@@ -141,7 +127,7 @@ class ProductController extends Controller
         return view('product-detail', compact('product', 'relatedProducts', 'store', 'settings'));
     }
 
-    private function processLeadSubmission(Request $request, Store $store, string $slug, bool $customDomain)
+    private function processLeadSubmission(Request $request, Store $store, string $slug)
     {
         $product = Product::where('slug', $slug)
             ->where('is_active', true)
@@ -272,20 +258,11 @@ class ProductController extends Controller
 
         \App\Jobs\PushOrderToExternalApi::dispatch($lead);
 
-        if ($customDomain) {
-            return redirect()->route('domain.store.product.thank-you', $slug);
-        }
+        session([
+            'completed_order_id' => $lead->id,
+            'pending_conversion_tracking' => true,
+        ]);
 
-        return redirect()->route('store.product.thank-you', [$store->subdomain, $slug]);
-    }
-
-    private function renderThankYou(Store $store, string $slug)
-    {
-        $product = Product::where('slug', $slug)
-            ->where('is_active', true)
-            ->where('store_id', $store->id)
-            ->first();
-
-        return view('thank-you', compact('store', 'product'));
+        return redirect()->route('thank-you');
     }
 }

@@ -1,3 +1,7 @@
+@php
+    $product = $lead->product;
+    $orderValue = $lead->selected_price ?? $product->price;
+@endphp
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,6 +13,22 @@
     <style>
         body { font-family: 'Cairo', sans-serif; }
     </style>
+
+    @include('partials.facebook-pixels', ['store' => $store])
+
+    @if($store->tiktok_pixel_enabled && $store->tiktok_pixel_id)
+    <!-- TikTok Pixel Code -->
+    <script>
+        !function (w, d, t) {
+          w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+          ttq.load('{{ $store->tiktok_pixel_id }}');
+          ttq.page();
+        }(window, document, 'ttq');
+    </script>
+    <!-- End TikTok Pixel Code -->
+    @endif
+
+    @include('partials.thank-you-conversion-events', compact('store', 'lead', 'trackConversion'))
 </head>
 <body class="antialiased bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
@@ -21,6 +41,57 @@
         <h1 class="text-3xl md:text-4xl font-black text-gray-900 mb-6">
             شكرًا لثقتكم بنا
         </h1>
+
+        <!-- Order Summary -->
+        <div class="bg-gray-50 border-2 border-gray-200 rounded-2xl p-6 mb-6 text-right">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 text-center">تفاصيل الطلب</h2>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">رقم الطلب</dt>
+                    <dd class="text-gray-900 font-bold">#{{ $lead->id }}</dd>
+                </div>
+                @if($lead->name)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">الاسم</dt>
+                    <dd class="text-gray-900 font-semibold">{{ $lead->name }}</dd>
+                </div>
+                @endif
+                @if($lead->phone)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">الهاتف</dt>
+                    <dd class="text-gray-900 font-semibold" dir="ltr">{{ $lead->phone }}</dd>
+                </div>
+                @endif
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">المنتج</dt>
+                    <dd class="text-gray-900 font-semibold">{{ $product->name }}</dd>
+                </div>
+                @if($lead->promotion)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">العرض</dt>
+                    <dd class="text-gray-900">{{ $lead->promotion->label ?? $lead->promotion->quantity_range }}</dd>
+                </div>
+                @endif
+                @if($lead->variation)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-gray-500">الخيار</dt>
+                    <dd class="text-gray-900">
+                        @if(!empty($lead->variation->attributes) && is_array($lead->variation->attributes))
+                            {{ implode(' / ', array_map(fn($k, $v) => "$k: $v", array_keys($lead->variation->attributes), $lead->variation->attributes)) }}
+                        @else
+                            {{ $lead->variation->name ?? '—' }}
+                        @endif
+                    </dd>
+                </div>
+                @endif
+                @if($orderValue)
+                <div class="flex justify-between gap-4 border-t border-gray-200 pt-3">
+                    <dt class="text-gray-500">المبلغ</dt>
+                    <dd class="text-green-700 font-black text-lg">{{ number_format((float) $orderValue, 2) }} درهم</dd>
+                </div>
+                @endif
+            </dl>
+        </div>
         
         <!-- Success Message -->
         <div class="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-6">
@@ -73,8 +144,6 @@
                 نشكركم على اختياركم لنا، ونتطلع إلى تقديم تجربة ممتازة لكم 🌿
             </p>
         </div>
-        
-        {{-- Back button hidden as per request --}}
     </div>
 </body>
 </html>
