@@ -26,7 +26,7 @@ class ThankYouController extends Controller
         }
 
         $store = $lead->product->store;
-        $store->load('activeFacebookPixels');
+        $store->loadMissing('activeFacebookPixels');
 
         $resolvedStore = $request->attributes->get('resolved_store');
         if ($resolvedStore && $resolvedStore->id !== $store->id) {

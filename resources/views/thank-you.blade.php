@@ -14,7 +14,20 @@
         body { font-family: 'Cairo', sans-serif; }
     </style>
 
-    @include('partials.facebook-pixels', ['store' => $store])
+    @include('partials.facebook-pixels', [
+        'store' => $store,
+        'facebookPixelEvents' => $trackConversion ? [[
+            'name' => 'Lead',
+            'params' => [
+                'content_name' => $product->name,
+                'content_ids' => [(string) $product->id],
+                'content_type' => 'product',
+                'value' => (float) $orderValue,
+                'currency' => 'MAD',
+                'order_id' => (string) $lead->id,
+            ],
+        ]] : [],
+    ])
 
     @if($store->tiktok_pixel_enabled && $store->tiktok_pixel_id)
     <!-- TikTok Pixel Code -->
