@@ -1317,19 +1317,28 @@ class CustomerDashboardController extends Controller
         $sellers = [];
         $sellersError = null;
         $sellersLoaded = false;
+        $sellersPartial = false;
 
         $apiService = new \App\Services\ExternalApiService($user);
         if ($apiService->isEnabled()) {
             $result = $apiService->getSellers();
             $sellersLoaded = true;
+            $sellers = $result['sellers'] ?? [];
             if ($result['success']) {
-                $sellers = $result['sellers'] ?? [];
+                $sellersError = null;
             } else {
                 $sellersError = $result['message'] ?? 'Failed to load sellers';
+                $sellersPartial = count($sellers) > 0;
             }
         }
 
-        return view('workspaces.alfa-cod-settings', compact('user', 'sellers', 'sellersError', 'sellersLoaded'));
+        return view('workspaces.alfa-cod-settings', compact(
+            'user',
+            'sellers',
+            'sellersError',
+            'sellersLoaded',
+            'sellersPartial'
+        ));
     }
 
     public function saveExternalApiSettings(Request $request)

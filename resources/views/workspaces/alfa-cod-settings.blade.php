@@ -120,9 +120,39 @@
                                 <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                     Save and enable your Alfa-COD API connection above to load sellers.
                                 </div>
-                            @elseif(!empty($sellersError))
-                                <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            @elseif(!empty($sellersError) && empty($sellers))
+                                <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 space-y-2">
+                                    <p>{{ $sellersError }}</p>
+                                    <p class="text-xs text-red-600">
+                                        On the Alfa-COD server run:
+                                        <code class="bg-red-100 px-1 rounded">git pull origin master</code>
+                                        then
+                                        <code class="bg-red-100 px-1 rounded">php artisan route:clear</code>
+                                    </p>
+                                </div>
+                            @elseif(!empty($sellersError) && !empty($sellers))
+                                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-4">
                                     {{ $sellersError }}
+                                </div>
+                                <div class="overflow-hidden rounded-lg border border-gray-200">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-50 text-gray-500">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left font-medium">ID</th>
+                                                <th class="px-4 py-2 text-left font-medium">Seller</th>
+                                                <th class="px-4 py-2 text-left font-medium">Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            @foreach($sellers as $seller)
+                                                <tr class="text-gray-800">
+                                                    <td class="px-4 py-2 text-gray-500">{{ $seller['id'] }}</td>
+                                                    <td class="px-4 py-2">{{ $seller['company_name'] ?: $seller['name'] }}</td>
+                                                    <td class="px-4 py-2 text-gray-500">{{ $seller['email'] ?? '—' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             @elseif(count($sellers) === 0)
                                 <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">

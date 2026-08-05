@@ -81,19 +81,20 @@
                                     </select>
                                     <p class="mt-1 text-sm text-gray-500">Orders from this store will appear in this seller's Alfa-COD account.</p>
                                 @else
-                                    <div class="mt-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                    <div class="mt-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 mb-2">
                                         @if($store->alfa_cod_seller_id)
                                             Currently assigned: <strong>{{ $store->alfa_cod_seller_name ?: ('Seller #' . $store->alfa_cod_seller_id) }}</strong>.
-                                            Reconnect
-                                            <a href="{{ route('workspaces.alfa-cod-settings') }}" class="font-medium underline">Alfa-COD Connect</a>
-                                            to change the seller.
-                                        @else
-                                            No sellers loaded. Configure
-                                            <a href="{{ route('workspaces.alfa-cod-settings') }}" class="font-medium underline">Alfa-COD Connect</a>
-                                            first, then refresh this page.
                                         @endif
+                                        Seller list not loaded. Enter a seller ID manually or open
+                                        <a href="{{ route('workspaces.alfa-cod-settings') }}" class="font-medium underline">Alfa-COD Connect</a>.
                                     </div>
-                                    <input type="hidden" name="alfa_cod_seller_id" value="{{ old('alfa_cod_seller_id', $store->alfa_cod_seller_id) }}">
+                                    <input type="number" name="alfa_cod_seller_id" id="alfa_cod_seller_id" min="1"
+                                        value="{{ old('alfa_cod_seller_id', $store->alfa_cod_seller_id) }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Alfa-COD seller / vendor ID">
+                                    <input type="text" name="alfa_cod_seller_name" value="{{ old('alfa_cod_seller_name', $store->alfa_cod_seller_name) }}"
+                                        class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Seller name (optional)">
                                 @endif
                                 @error('alfa_cod_seller_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

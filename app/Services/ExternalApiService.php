@@ -167,7 +167,7 @@ class ExternalApiService
             $this->apiUrl . '/api/external/sellers',
         ];
 
-        $lastError = 'Unable to fetch sellers';
+        $lastError = 'Unable to fetch sellers from Alfa-COD';
 
         foreach ($endpoints as $url) {
             try {
@@ -178,26 +178,44 @@ class ExternalApiService
                 ->timeout(20)
                 ->get($url, ['active_only' => 1]);
 
+                $contentType = (string) $response->header('Content-Type');
+                $body = $response->body();
+                $looksLikeHtml = str_contains($contentType, 'text/html')
+                    || str_starts_with(ltrim($body), '<!DOCTYPE')
+                    || str_starts_with(ltrim($body), '<html');
+
+                if ($looksLikeHtml) {
+                    $lastError = 'Alfa-COD /api/sellers is not deployed on the live server yet. Pull latest master on alfa-cod.com and clear route cache.';
+                    Log::warning('Alfa-COD sellers endpoint returned HTML', [
+                        'user_id' => $this->user->id,
+                        'url' => $url,
+                        'status' => $response->status(),
+                    ]);
+                    continue;
+                }
+
                 if (!$response->successful()) {
-                    $lastError = 'Failed to fetch sellers (HTTP ' . $response->status() . ') from ' . $url;
+                    $lastError = 'Failed to fetch sellers (HTTP ' . $response->status() . ')';
                     Log::warning('Failed to fetch Alfa-COD sellers', [
                         'user_id' => $this->user->id,
                         'url' => $url,
                         'status' => $response->status(),
-                        'body' => $response->body(),
+                        'body' => $body,
                     ]);
                     continue;
                 }
 
                 $payload = $response->json();
-                $rawSellers = [];
+                if (!is_array($payload)) {
+                    $lastError = 'Alfa-COD sellers response was not valid JSON';
+                    continue;
+                }
 
-                if (is_array($payload)) {
-                    if (isset($payload['data']) && is_array($payload['data'])) {
-                        $rawSellers = $payload['data'];
-                    } elseif (array_is_list($payload)) {
-                        $rawSellers = $payload;
-                    }
+                $rawSellers = [];
+                if (isset($payload['data']) && is_array($payload['data'])) {
+                    $rawSellers = $payload['data'];
+                } elseif (array_is_list($payload)) {
+                    $rawSellers = $payload;
                 }
 
                 $sellers = collect($rawSellers)
@@ -246,10 +264,66 @@ class ExternalApiService
             }
         }
 
+        $sellers = $this->fallbackSellersFromAuth($lastError);
+
         return [
             'success' => false,
             'message' => $lastError,
-            'sellers' => [],
+            'sellers' => $sellers,
         ];
+    }
+
+    /**
+     * When /api/sellers is not deployed yet, at least return the seller linked to the API key.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function fallbackSellersFromAuth(string &$message): array
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])
+            ->timeout(15)
+            ->get($this->apiUrl . '/api/test-auth');
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $payload = $response->json();
+            if (!is_array($payload)) {
+                return [];
+            }
+
+            $vendorId = $payload['integration']['vendor_id'] ?? null;
+            if (!$vendorId) {
+                return [];
+            }
+
+            $user = is_array($payload['authenticated_user'] ?? null) ? $payload['authenticated_user'] : [];
+            $name = $user['name'] ?? ('Seller #' . $vendorId);
+            $email = $user['email'] ?? null;
+
+            $message = 'Full sellers list is unavailable until Alfa-COD deploys /api/sellers. Showing the seller linked to your API key only.';
+
+            return [[
+                'id' => (int) $vendorId,
+                'name' => $name,
+                'company_name' => $name,
+                'email' => $email,
+                'phone' => null,
+                'label' => trim($name . ($email ? " ({$email})" : '')),
+                'is_active' => true,
+            ]];
+        } catch (\Throwable $e) {
+            Log::warning('Failed Alfa-COD sellers fallback from test-auth', [
+                'user_id' => $this->user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
     }
 }

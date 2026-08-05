@@ -95,6 +95,7 @@ class StoreManagementController extends Controller
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'alfa_cod_seller_id' => 'nullable|integer|min:1',
+            'alfa_cod_seller_name' => 'nullable|string|max:255',
         ]);
         
         $validated['user_id'] = auth()->id();
@@ -104,7 +105,11 @@ class StoreManagementController extends Controller
             $validated['is_active'] = true;
         }
 
-        $this->applySellerAssignment($validated, $request->input('alfa_cod_seller_id'));
+        $this->applySellerAssignment(
+            $validated,
+            $request->input('alfa_cod_seller_id'),
+            $request->input('alfa_cod_seller_name')
+        );
         
         $store = Store::create($validated);
         
@@ -133,9 +138,14 @@ class StoreManagementController extends Controller
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'alfa_cod_seller_id' => 'nullable|integer|min:1',
+            'alfa_cod_seller_name' => 'nullable|string|max:255',
         ]);
 
-        $this->applySellerAssignment($validated, $request->input('alfa_cod_seller_id'));
+        $this->applySellerAssignment(
+            $validated,
+            $request->input('alfa_cod_seller_id'),
+            $request->input('alfa_cod_seller_name')
+        );
         
         $store->update($validated);
         
@@ -265,7 +275,7 @@ class StoreManagementController extends Controller
     /**
      * @param  array<string, mixed>  $validated
      */
-    protected function applySellerAssignment(array &$validated, mixed $sellerId): void
+    protected function applySellerAssignment(array &$validated, mixed $sellerId, ?string $manualName = null): void
     {
         if (empty($sellerId)) {
             $validated['alfa_cod_seller_id'] = null;
@@ -281,6 +291,7 @@ class StoreManagementController extends Controller
         $validated['alfa_cod_seller_name'] = $matched['label']
             ?? $matched['company_name']
             ?? $matched['name']
+            ?? (filled($manualName) ? trim($manualName) : null)
             ?? ('Seller #' . $sellerId);
     }
 }
