@@ -146,4 +146,110 @@ class ExternalApiService
             ];
         }
     }
+
+    /**
+     * Fetch sellers (vendors) from Alfa-COD / System Connect.
+     *
+     * @return array{success: bool, message?: string, sellers?: array<int, array<string, mixed>>}
+     */
+    public function getSellers(): array
+    {
+        if (!$this->isEnabled()) {
+            return [
+                'success' => false,
+                'message' => 'External API is not enabled or configured properly',
+                'sellers' => [],
+            ];
+        }
+
+        $endpoints = [
+            $this->apiUrl . '/api/sellers',
+            $this->apiUrl . '/api/external/sellers',
+        ];
+
+        $lastError = 'Unable to fetch sellers';
+
+        foreach ($endpoints as $url) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Accept' => 'application/json',
+                ])
+                ->timeout(20)
+                ->get($url, ['active_only' => 1]);
+
+                if (!$response->successful()) {
+                    $lastError = 'Failed to fetch sellers (HTTP ' . $response->status() . ') from ' . $url;
+                    Log::warning('Failed to fetch Alfa-COD sellers', [
+                        'user_id' => $this->user->id,
+                        'url' => $url,
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                    continue;
+                }
+
+                $payload = $response->json();
+                $rawSellers = [];
+
+                if (is_array($payload)) {
+                    if (isset($payload['data']) && is_array($payload['data'])) {
+                        $rawSellers = $payload['data'];
+                    } elseif (array_is_list($payload)) {
+                        $rawSellers = $payload;
+                    }
+                }
+
+                $sellers = collect($rawSellers)
+                    ->filter(fn ($seller) => is_array($seller) && isset($seller['id']))
+                    ->map(function (array $seller) {
+                        $name = $seller['company_name']
+                            ?? $seller['name']
+                            ?? $seller['label']
+                            ?? ('Seller #' . $seller['id']);
+
+                        $label = $seller['label'] ?? trim(
+                            $name . (!empty($seller['email']) ? ' (' . $seller['email'] . ')' : '')
+                        );
+
+                        return [
+                            'id' => (int) $seller['id'],
+                            'name' => $seller['name'] ?? $name,
+                            'company_name' => $seller['company_name'] ?? null,
+                            'email' => $seller['email'] ?? null,
+                            'phone' => $seller['phone'] ?? null,
+                            'label' => $label,
+                            'is_active' => (bool) ($seller['is_active'] ?? true),
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                Log::info('Fetched Alfa-COD sellers', [
+                    'user_id' => $this->user->id,
+                    'url' => $url,
+                    'count' => count($sellers),
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Sellers loaded successfully',
+                    'sellers' => $sellers,
+                ];
+            } catch (\Throwable $e) {
+                $lastError = $e->getMessage();
+                Log::error('Exception while fetching Alfa-COD sellers', [
+                    'user_id' => $this->user->id,
+                    'url' => $url,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => $lastError,
+            'sellers' => [],
+        ];
+    }
 }

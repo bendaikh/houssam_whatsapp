@@ -56,9 +56,6 @@
                                     <x-dropdown-link :href="route('app.tiktok-ads')">
                                         {{ __('TikTok Ads') }}
                                     </x-dropdown-link>
-                                    <x-dropdown-link :href="route('app.external-api-settings')">
-                                        {{ __('External API') }}
-                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>

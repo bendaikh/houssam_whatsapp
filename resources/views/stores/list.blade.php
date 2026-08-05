@@ -146,6 +146,11 @@
                                                         Inactive
                                                     </span>
                                                 @endif
+                                                @if($store->alfa_cod_seller_id)
+                                                    <span class="px-2 py-1 text-xs font-semibold text-violet-700 bg-violet-100 rounded" title="Alfa-COD seller #{{ $store->alfa_cod_seller_id }}">
+                                                        Seller: {{ $store->alfa_cod_seller_name ?: ('#' . $store->alfa_cod_seller_id) }}
+                                                    </span>
+                                                @endif
                                             </div>
                                             <p class="text-sm text-gray-600 mt-1">
                                                 @if($store->domain)

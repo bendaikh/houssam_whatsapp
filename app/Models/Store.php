@@ -20,12 +20,15 @@ class Store extends Model
         'facebook_pixel_enabled',
         'tiktok_pixel_id',
         'tiktok_pixel_enabled',
+        'alfa_cod_seller_id',
+        'alfa_cod_seller_name',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'facebook_pixel_enabled' => 'boolean',
         'tiktok_pixel_enabled' => 'boolean',
+        'alfa_cod_seller_id' => 'integer',
     ];
 
     protected static function boot()

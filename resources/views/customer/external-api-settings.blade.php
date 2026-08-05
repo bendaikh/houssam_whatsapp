@@ -1,8 +1,8 @@
 <x-customer-layout>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-bold text-white">System Connect - API Integration</h2>
-            <p class="text-sm text-gray-400 mt-1">Connect your external application to automatically receive orders from your landing pages</p>
+            <h2 class="text-2xl font-bold text-white">System Connect — Alfa-COD</h2>
+            <p class="text-sm text-gray-400 mt-1">Connect Alfa-COD to push orders and assign sellers to your stores</p>
         </div>
     </x-slot>
 
@@ -24,8 +24,8 @@
             <div class="bg-[#0f1c2e] border border-white/10 rounded-xl p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
                     <div>
-                        <h3 class="text-lg font-semibold text-white">Custom API Integration</h3>
-                        <p class="text-sm text-gray-400 mt-1">Configure your external API to receive orders automatically when customers submit the landing page form</p>
+                        <h3 class="text-lg font-semibold text-white">Alfa-COD API Connection</h3>
+                        <p class="text-sm text-gray-400 mt-1">Configure your Alfa-COD (smanager) API to receive orders and load sellers</p>
                     </div>
                     @if($user->external_api_enabled && $user->external_api_url && $user->external_api_key_encrypted)
                         <span class="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-300">Active</span>
@@ -44,7 +44,7 @@
                             class="w-full px-4 py-3 bg-[#0a1628] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition"
                             placeholder="https://smanager.site">
                         <p class="mt-1 text-xs text-gray-400">
-                            Enter the base URL of your application (WITHOUT /api at the end).<br>
+                            Enter the base URL of Alfa-COD (WITHOUT /api at the end).<br>
                             ✅ Correct: <code class="text-emerald-400">https://smanager.site</code><br>
                             ❌ Wrong: <code class="text-red-400">https://smanager.site/api</code>
                         </p>
@@ -57,7 +57,7 @@
                         <label for="external_api_key" class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
                         <input type="password" name="external_api_key" id="external_api_key" autocomplete="off"
                             class="w-full px-4 py-3 bg-[#0a1628] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition"
-                            placeholder="{{ $user->external_api_key_encrypted ? 'New key to replace the current one' : 'Your API authentication key' }}">
+                            placeholder="{{ $user->external_api_key_encrypted ? 'New key to replace the current one' : 'Your API authentication key (capi_...)' }}">
                         <p class="mt-1 text-xs text-gray-400">Your API key is encrypted and securely stored. It never appears in plain text after saving.</p>
                         @error('external_api_key')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -71,7 +71,7 @@
                                 class="rounded border-white/20 bg-[#0a1628] text-emerald-500 focus:ring-emerald-500/30">
                             <div>
                                 <div class="font-medium text-white">Enable API Integration</div>
-                                <div class="text-xs text-gray-400 mt-0.5">Automatically push orders to your external API when landing page forms are submitted</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Automatically push orders to Alfa-COD when landing page forms are submitted</div>
                             </div>
                         </label>
                         @if($user->external_api_key_encrypted)
@@ -98,6 +98,61 @@
                     </form>
                 @endif
             </div>
+
+            <!-- Sellers from Alfa-COD -->
+            <div class="bg-[#0f1c2e] border border-white/10 rounded-xl p-6">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Alfa-COD Sellers</h3>
+                        <p class="text-sm text-gray-400 mt-1">Sellers loaded from Alfa-COD. Assign one to each store when creating or editing a store.</p>
+                    </div>
+                    @if($sellersLoaded && empty($sellersError))
+                        <span class="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-300">
+                            {{ count($sellers) }} seller{{ count($sellers) === 1 ? '' : 's' }}
+                        </span>
+                    @endif
+                </div>
+
+                @if(!$user->external_api_enabled || !$user->external_api_url || !$user->external_api_key_encrypted)
+                    <div class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        Save and enable your Alfa-COD API connection above to load sellers.
+                    </div>
+                @elseif(!empty($sellersError))
+                    <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                        {{ $sellersError }}
+                    </div>
+                @elseif(count($sellers) === 0)
+                    <div class="rounded-lg border border-white/10 bg-[#0a1628] px-4 py-3 text-sm text-gray-400">
+                        No active sellers found in Alfa-COD.
+                    </div>
+                @else
+                    <div class="overflow-hidden rounded-lg border border-white/10">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-[#0a1628] text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-2 text-left font-medium">ID</th>
+                                    <th class="px-4 py-2 text-left font-medium">Seller</th>
+                                    <th class="px-4 py-2 text-left font-medium">Email</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                @foreach($sellers as $seller)
+                                    <tr class="text-gray-200">
+                                        <td class="px-4 py-2 text-gray-400">{{ $seller['id'] }}</td>
+                                        <td class="px-4 py-2">{{ $seller['company_name'] ?: $seller['name'] }}</td>
+                                        <td class="px-4 py-2 text-gray-400">{{ $seller['email'] ?? '—' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="mt-3 text-xs text-gray-400">
+                        Next step: open
+                        <a href="{{ route('stores.create') }}" class="text-cyan-400 hover:underline">Create Store</a>
+                        or edit an existing store and choose the seller.
+                    </p>
+                @endif
+            </div>
         </div>
 
         <!-- Right Column - Info -->
@@ -108,23 +163,19 @@
                 <ol class="space-y-3 text-sm text-gray-300">
                     <li class="flex gap-3">
                         <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold">1</span>
-                        <span>Create your Custom API Integration in your external app</span>
+                        <span>Connect Alfa-COD with your Base URL and API key</span>
                     </li>
                     <li class="flex gap-3">
                         <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold">2</span>
-                        <span>Generate an API Key for authentication</span>
+                        <span>Sellers load automatically from Alfa-COD</span>
                     </li>
                     <li class="flex gap-3">
                         <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold">3</span>
-                        <span>Copy the Base API URL and API Key</span>
+                        <span>Assign a seller when creating or editing a store</span>
                     </li>
                     <li class="flex gap-3">
                         <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold">4</span>
-                        <span>Paste them here and enable the integration</span>
-                    </li>
-                    <li class="flex gap-3">
-                        <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold">5</span>
-                        <span>Test the connection to verify it's working</span>
+                        <span>New orders are pushed with that seller so they show in their Alfa-COD account</span>
                     </li>
                 </ol>
             </div>
@@ -138,14 +189,21 @@
                             <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[10px] font-bold">POST</span>
                             <code class="text-gray-300">/api/orders</code>
                         </div>
-                        <p class="text-gray-400">Create a new order</p>
+                        <p class="text-gray-400">Create a new order (includes vendor_id / seller)</p>
+                    </div>
+                    <div class="bg-[#0a1628] border border-white/5 rounded-lg p-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold">GET</span>
+                            <code class="text-gray-300">/api/sellers</code>
+                        </div>
+                        <p class="text-gray-400">List Alfa-COD sellers</p>
                     </div>
                     <div class="bg-[#0a1628] border border-white/5 rounded-lg p-3">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-bold">GET</span>
                             <code class="text-gray-300">/api/orders</code>
                         </div>
-                        <p class="text-gray-400">Get all orders</p>
+                        <p class="text-gray-400">Test connection / list orders</p>
                     </div>
                 </div>
             </div>
@@ -157,27 +215,9 @@
                     <pre class="text-xs text-gray-300 overflow-x-auto"><code>{
   "client_name": "string",
   "client_phone": "string",
+  "vendor_id": "number (seller)",
   "source": "whatsapp",
-  "website": {
-    "id": "number",
-    "name": "string",
-    "store_name": "string",
-    "subdomain": "string",
-    "domain": "string|null",
-    "url": "string",
-    "product_url": "string",
-    "owner": {
-      "id": "number",
-      "name": "string",
-      "company_name": "string",
-      "email": "string",
-      "phone": "string"
-    },
-    "contact": {
-      "phone": "string",
-      "email": "string"
-    }
-  },
+  "website": { "...": "store info" },
   "items": [{
     "product_id": "number",
     "sku": "string",
@@ -186,16 +226,7 @@
     "price": "number"
   }],
   "notes": "string",
-  "metadata": {
-    "chateasy_lead_id": "number",
-    "chateasy_product_id": "number",
-    "chateasy_variation_id": "number|null",
-    "chateasy_store_id": "number|null",
-    "sku": "string",
-    "language": "fr|en|ar",
-    "created_at": "ISO8601",
-    "website": { "...": "same as top-level website object" }
-  }
+  "metadata": { "...": "..." }
 }</code></pre>
                 </div>
             </div>

@@ -81,7 +81,9 @@ class StoreManagementController extends Controller
     
     public function create()
     {
-        return view('stores.create');
+        $sellers = $this->fetchAlfaCodSellers();
+
+        return view('stores.create', compact('sellers'));
     }
     
     public function store(Request $request)
@@ -92,6 +94,7 @@ class StoreManagementController extends Controller
             'domain' => 'nullable|string|max:255|unique:stores,domain',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'alfa_cod_seller_id' => 'nullable|integer|min:1',
         ]);
         
         $validated['user_id'] = auth()->id();
@@ -100,6 +103,8 @@ class StoreManagementController extends Controller
         if (!isset($validated['is_active'])) {
             $validated['is_active'] = true;
         }
+
+        $this->applySellerAssignment($validated, $request->input('alfa_cod_seller_id'));
         
         $store = Store::create($validated);
         
@@ -111,8 +116,10 @@ class StoreManagementController extends Controller
     public function edit(Store $store)
     {
         $this->authorize('update', $store);
+
+        $sellers = $this->fetchAlfaCodSellers();
         
-        return view('stores.edit', compact('store'));
+        return view('stores.edit', compact('store', 'sellers'));
     }
     
     public function update(Request $request, Store $store)
@@ -125,7 +132,10 @@ class StoreManagementController extends Controller
             'domain' => 'nullable|string|max:255|unique:stores,domain,' . $store->id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
+            'alfa_cod_seller_id' => 'nullable|integer|min:1',
         ]);
+
+        $this->applySellerAssignment($validated, $request->input('alfa_cod_seller_id'));
         
         $store->update($validated);
         
@@ -233,5 +243,44 @@ class StoreManagementController extends Controller
         }
         
         return redirect()->route('stores.dashboard')->with('success', 'Store "' . $store->name . '" duplicated successfully with all ' . $products->count() . ' products!');
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function fetchAlfaCodSellers(): array
+    {
+        $user = auth()->user();
+        $apiService = new \App\Services\ExternalApiService($user);
+
+        if (!$apiService->isEnabled()) {
+            return [];
+        }
+
+        $result = $apiService->getSellers();
+
+        return $result['success'] ? ($result['sellers'] ?? []) : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    protected function applySellerAssignment(array &$validated, mixed $sellerId): void
+    {
+        if (empty($sellerId)) {
+            $validated['alfa_cod_seller_id'] = null;
+            $validated['alfa_cod_seller_name'] = null;
+            return;
+        }
+
+        $sellerId = (int) $sellerId;
+        $sellers = $this->fetchAlfaCodSellers();
+        $matched = collect($sellers)->firstWhere('id', $sellerId);
+
+        $validated['alfa_cod_seller_id'] = $sellerId;
+        $validated['alfa_cod_seller_name'] = $matched['label']
+            ?? $matched['company_name']
+            ?? $matched['name']
+            ?? ('Seller #' . $sellerId);
     }
 }

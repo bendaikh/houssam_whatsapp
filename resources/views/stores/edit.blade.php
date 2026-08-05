@@ -67,6 +67,39 @@
                                 @enderror
                             </div>
 
+                            <div>
+                                <label for="alfa_cod_seller_id" class="block text-sm font-medium text-gray-700">Alfa-COD Seller</label>
+                                @if(count($sellers ?? []) > 0)
+                                    <select name="alfa_cod_seller_id" id="alfa_cod_seller_id"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">— No seller assigned —</option>
+                                        @foreach($sellers as $seller)
+                                            <option value="{{ $seller['id'] }}" @selected((string) old('alfa_cod_seller_id', $store->alfa_cod_seller_id) === (string) $seller['id'])>
+                                                {{ $seller['label'] ?? $seller['company_name'] ?? $seller['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-sm text-gray-500">Orders from this store will appear in this seller's Alfa-COD account.</p>
+                                @else
+                                    <div class="mt-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                        @if($store->alfa_cod_seller_id)
+                                            Currently assigned: <strong>{{ $store->alfa_cod_seller_name ?: ('Seller #' . $store->alfa_cod_seller_id) }}</strong>.
+                                            Reconnect
+                                            <a href="{{ route('workspaces.alfa-cod-settings') }}" class="font-medium underline">Alfa-COD Connect</a>
+                                            to change the seller.
+                                        @else
+                                            No sellers loaded. Configure
+                                            <a href="{{ route('workspaces.alfa-cod-settings') }}" class="font-medium underline">Alfa-COD Connect</a>
+                                            first, then refresh this page.
+                                        @endif
+                                    </div>
+                                    <input type="hidden" name="alfa_cod_seller_id" value="{{ old('alfa_cod_seller_id', $store->alfa_cod_seller_id) }}">
+                                @endif
+                                @error('alfa_cod_seller_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <div class="flex items-center">
                                 <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $store->is_active) ? 'checked' : '' }}
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">

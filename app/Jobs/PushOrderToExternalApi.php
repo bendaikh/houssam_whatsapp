@@ -85,8 +85,15 @@ class PushOrderToExternalApi implements ShouldQueue
                 'language' => $lead->language,
                 'created_at' => $lead->created_at->toIso8601String(),
                 'website' => $website,
+                'alfa_cod_seller_id' => $store?->alfa_cod_seller_id,
+                'alfa_cod_seller_name' => $store?->alfa_cod_seller_name,
             ]
         ];
+
+        // Assign the Alfa-COD seller linked to this store so the order appears in their account
+        if ($store?->alfa_cod_seller_id) {
+            $orderData['vendor_id'] = (int) $store->alfa_cod_seller_id;
+        }
 
         $result = $apiService->createOrder($orderData);
         

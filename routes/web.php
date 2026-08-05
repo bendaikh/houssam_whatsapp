@@ -90,6 +90,11 @@ Route::middleware(['auth'])->prefix('workspaces')->name('workspaces.')->group(fu
     Route::post('/ai-settings/openai/test', [CustomerDashboardController::class, 'testOpenAiConnection'])->name('ai-settings.openai.test');
     Route::post('/ai-settings/anthropic', [CustomerDashboardController::class, 'saveAnthropicSettings'])->name('ai-settings.anthropic.save');
     Route::post('/ai-settings/anthropic/test', [CustomerDashboardController::class, 'testAnthropicConnection'])->name('ai-settings.anthropic.test');
+
+    // Alfa-COD / System Connect (account level — same credentials for all stores)
+    Route::get('/alfa-cod-settings', [CustomerDashboardController::class, 'externalApiSettings'])->name('alfa-cod-settings');
+    Route::post('/alfa-cod-settings', [CustomerDashboardController::class, 'saveExternalApiSettings'])->name('alfa-cod-settings.save');
+    Route::post('/alfa-cod-settings/test', [CustomerDashboardController::class, 'testExternalApiConnection'])->name('alfa-cod-settings.test');
 });
 
 // Store Management Routes (must come before app routes) - requires active workspace
@@ -166,8 +171,10 @@ Route::middleware(['auth', 'require.workspace', 'require.store'])->prefix('app')
     Route::post('/campaign-creator/create', [\App\Http\Controllers\CampaignCreatorController::class, 'createCampaign'])->name('campaign-creator.create');
     Route::post('/campaign-creator/facebook/pages', [\App\Http\Controllers\CampaignCreatorController::class, 'getFacebookPages'])->name('campaign-creator.facebook.pages');
     
-    // External API Integration
-    Route::get('/external-api-settings', [CustomerDashboardController::class, 'externalApiSettings'])->name('external-api-settings');
+    // External API Integration — keep old URLs working
+    Route::get('/external-api-settings', function () {
+        return redirect()->route('workspaces.alfa-cod-settings');
+    })->name('external-api-settings');
     Route::post('/external-api-settings', [CustomerDashboardController::class, 'saveExternalApiSettings'])->name('external-api-settings.save');
     Route::post('/external-api-settings/test', [CustomerDashboardController::class, 'testExternalApiConnection'])->name('external-api-settings.test');
     

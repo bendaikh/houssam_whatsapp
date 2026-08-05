@@ -89,6 +89,17 @@
                                     AI API Settings
                                 </a>
 
+                                <div class="border-t border-gray-200 my-4"></div>
+
+                                <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Integrations</p>
+
+                                <a href="{{ route('workspaces.alfa-cod-settings') }}" class="{{ request()->routeIs('workspaces.alfa-cod-settings') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50' }} flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                    </svg>
+                                    Alfa-COD Connect
+                                </a>
+
                             @elseif(request()->routeIs('stores.*'))
                                 <!-- Store Management Navigation -->
                                 <a href="{{ route('workspaces.dashboard') }}" class="text-gray-700 hover:bg-gray-50 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition">

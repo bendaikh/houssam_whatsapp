@@ -1314,7 +1314,22 @@ class CustomerDashboardController extends Controller
     public function externalApiSettings()
     {
         $user = auth()->user();
-        return view('customer.external-api-settings', compact('user'));
+        $sellers = [];
+        $sellersError = null;
+        $sellersLoaded = false;
+
+        $apiService = new \App\Services\ExternalApiService($user);
+        if ($apiService->isEnabled()) {
+            $result = $apiService->getSellers();
+            $sellersLoaded = true;
+            if ($result['success']) {
+                $sellers = $result['sellers'] ?? [];
+            } else {
+                $sellersError = $result['message'] ?? 'Failed to load sellers';
+            }
+        }
+
+        return view('workspaces.alfa-cod-settings', compact('user', 'sellers', 'sellersError', 'sellersLoaded'));
     }
 
     public function saveExternalApiSettings(Request $request)
@@ -1340,8 +1355,8 @@ class CustomerDashboardController extends Controller
         $user->save();
 
         return redirect()
-            ->route('app.external-api-settings')
-            ->with('success', 'External API settings saved successfully!');
+            ->route('workspaces.alfa-cod-settings')
+            ->with('success', 'Alfa-COD settings saved successfully!');
     }
 
     public function testExternalApiConnection(Request $request)
@@ -1350,7 +1365,7 @@ class CustomerDashboardController extends Controller
         
         if (!$user->external_api_enabled || !$user->external_api_url || !$user->external_api_key_encrypted) {
             return redirect()
-                ->route('app.external-api-settings')
+                ->route('workspaces.alfa-cod-settings')
                 ->with('error', 'Please configure all API settings before testing.');
         }
 
@@ -1359,12 +1374,12 @@ class CustomerDashboardController extends Controller
 
         if ($result['success']) {
             return redirect()
-                ->route('app.external-api-settings')
+                ->route('workspaces.alfa-cod-settings')
                 ->with('success', 'Connection successful! Your API is working correctly.');
         }
 
         return redirect()
-            ->route('app.external-api-settings')
+            ->route('workspaces.alfa-cod-settings')
             ->with('error', 'Connection failed: ' . $result['message']);
     }
 }
