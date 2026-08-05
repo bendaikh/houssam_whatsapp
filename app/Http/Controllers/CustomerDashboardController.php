@@ -1319,7 +1319,7 @@ class CustomerDashboardController extends Controller
         $sellersLoaded = false;
         $sellersPartial = false;
 
-        $apiService = new \App\Services\ExternalApiService($user);
+        $apiService = \App\Services\ExternalApiService::forUser($user);
         if ($apiService->isEnabled()) {
             $result = $apiService->getSellers();
             $sellersLoaded = true;
@@ -1378,13 +1378,13 @@ class CustomerDashboardController extends Controller
                 ->with('error', 'Please configure all API settings before testing.');
         }
 
-        $apiService = new \App\Services\ExternalApiService($user);
+        $apiService = \App\Services\ExternalApiService::forUser($user);
         $result = $apiService->testConnection();
 
         if ($result['success']) {
             return redirect()
                 ->route('workspaces.alfa-cod-settings')
-                ->with('success', 'Connection successful! Your API is working correctly.');
+                ->with('success', 'Connection successful! Your Alfa-COD Connect is working correctly.');
         }
 
         return redirect()

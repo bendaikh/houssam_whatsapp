@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
@@ -9,30 +10,92 @@ use Illuminate\Support\Facades\Log;
 
 class ExternalApiService
 {
-    protected $user;
-    protected $apiUrl;
-    protected $apiKey;
+    protected ?User $user = null;
+    protected ?Store $store = null;
+    protected ?string $apiUrl = null;
+    protected ?string $apiKey = null;
+    protected bool $enabled = false;
+    protected string $contextLabel = 'unknown';
 
-    public function __construct(User $user)
+    public function __construct(?User $user = null)
+    {
+        if ($user) {
+            $this->configureFromUser($user);
+        }
+    }
+
+    /**
+     * Account-level Alfa-COD Connect — used to load sellers.
+     */
+    public static function forUser(User $user): self
+    {
+        $service = new self();
+        $service->configureFromUser($user);
+
+        return $service;
+    }
+
+    /**
+     * Per-store System Connect — used to push orders.
+     */
+    public static function forStore(Store $store): self
+    {
+        $service = new self();
+        $service->configureFromStore($store);
+
+        return $service;
+    }
+
+    protected function configureFromUser(User $user): void
     {
         $this->user = $user;
-        
-        if ($user->external_api_enabled && $user->external_api_url && $user->external_api_key_encrypted) {
-            // Remove /api or /api/ from the end if present
-            $this->apiUrl = rtrim($user->external_api_url, '/');
-            $this->apiUrl = preg_replace('#/api/?$#i', '', $this->apiUrl);
-            
-            try {
-                $this->apiKey = Crypt::decryptString($user->external_api_key_encrypted);
-            } catch (\Throwable $e) {
-                Log::error('Failed to decrypt external API key for user ' . $user->id, ['error' => $e->getMessage()]);
-            }
+        $this->store = null;
+        $this->contextLabel = 'user:' . $user->id;
+        $this->configure(
+            (bool) $user->external_api_enabled,
+            $user->external_api_url,
+            $user->external_api_key_encrypted
+        );
+    }
+
+    protected function configureFromStore(Store $store): void
+    {
+        $this->store = $store;
+        $this->user = $store->user;
+        $this->contextLabel = 'store:' . $store->id;
+        $this->configure(
+            (bool) $store->system_connect_enabled,
+            $store->system_connect_url,
+            $store->system_connect_key_encrypted
+        );
+    }
+
+    protected function configure(bool $enabled, ?string $url, ?string $encryptedKey): void
+    {
+        $this->enabled = false;
+        $this->apiUrl = null;
+        $this->apiKey = null;
+
+        if (!$enabled || !$url || !$encryptedKey) {
+            return;
+        }
+
+        $this->apiUrl = rtrim($url, '/');
+        $this->apiUrl = preg_replace('#/api/?$#i', '', $this->apiUrl);
+
+        try {
+            $this->apiKey = Crypt::decryptString($encryptedKey);
+            $this->enabled = !empty($this->apiUrl) && !empty($this->apiKey);
+        } catch (\Throwable $e) {
+            Log::error('Failed to decrypt external API key for ' . $this->contextLabel, [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
     public function isEnabled(): bool
     {
-        return $this->user->external_api_enabled && !empty($this->apiUrl) && !empty($this->apiKey);
+        return $this->enabled && !empty($this->apiUrl) && !empty($this->apiKey);
     }
 
     public function createOrder(array $orderData): array
@@ -40,7 +103,7 @@ class ExternalApiService
         if (!$this->isEnabled()) {
             return [
                 'success' => false,
-                'message' => 'External API is not enabled or configured properly'
+                'message' => 'System Connect is not enabled or configured properly for this store',
             ];
         }
 
@@ -49,15 +112,15 @@ class ExternalApiService
         try {
             Log::info('Attempting to create order in external API', [
                 'url' => $url,
-                'user_id' => $this->user->id,
-                'order_data' => $orderData
+                'context' => $this->contextLabel,
+                'order_data' => $orderData,
             ]);
 
             $jsonBody = json_encode($orderData);
-            
+
             Log::info('Raw JSON body being sent', [
                 'json_body' => $jsonBody,
-                'json_valid' => json_last_error() === JSON_ERROR_NONE
+                'json_valid' => json_last_error() === JSON_ERROR_NONE,
             ]);
 
             $response = Http::withHeaders([
@@ -70,42 +133,41 @@ class ExternalApiService
 
             if ($response->successful()) {
                 Log::info('Order pushed to external API successfully', [
-                    'user_id' => $this->user->id,
+                    'context' => $this->contextLabel,
                     'url' => $url,
-                    'response' => $response->json()
+                    'response' => $response->json(),
                 ]);
 
                 return [
                     'success' => true,
                     'message' => 'Order created successfully',
-                    'data' => $response->json()
+                    'data' => $response->json(),
                 ];
             }
 
             Log::warning('Failed to push order to external API', [
-                'user_id' => $this->user->id,
+                'context' => $this->contextLabel,
                 'url' => $url,
                 'status' => $response->status(),
-                'response' => $response->body()
+                'response' => $response->body(),
             ]);
 
             return [
                 'success' => false,
                 'message' => 'Failed to create order: ' . $response->body(),
-                'status' => $response->status()
+                'status' => $response->status(),
             ];
-
         } catch (\Throwable $e) {
             Log::error('Exception while pushing order to external API', [
-                'user_id' => $this->user->id,
+                'context' => $this->contextLabel,
                 'url' => $url,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Exception: ' . $e->getMessage()
+                'message' => 'Exception: ' . $e->getMessage(),
             ];
         }
     }
@@ -115,7 +177,7 @@ class ExternalApiService
         if (!$this->isEnabled()) {
             return [
                 'success' => false,
-                'message' => 'External API is not enabled or configured properly'
+                'message' => 'API is not enabled or configured properly',
             ];
         }
 
@@ -130,25 +192,24 @@ class ExternalApiService
             if ($response->successful()) {
                 return [
                     'success' => true,
-                    'message' => 'Connection successful'
+                    'message' => 'Connection successful',
                 ];
             }
 
             return [
                 'success' => false,
-                'message' => 'Connection failed with status: ' . $response->status()
+                'message' => 'Connection failed with status: ' . $response->status(),
             ];
-
         } catch (\Throwable $e) {
             return [
                 'success' => false,
-                'message' => 'Connection error: ' . $e->getMessage()
+                'message' => 'Connection error: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Fetch sellers (vendors) from Alfa-COD / System Connect.
+     * Fetch sellers (vendors) from Alfa-COD Connect (account-level credentials).
      *
      * @return array{success: bool, message?: string, sellers?: array<int, array<string, mixed>>}
      */
@@ -157,7 +218,7 @@ class ExternalApiService
         if (!$this->isEnabled()) {
             return [
                 'success' => false,
-                'message' => 'External API is not enabled or configured properly',
+                'message' => 'Alfa-COD Connect is not enabled or configured properly',
                 'sellers' => [],
             ];
         }
@@ -187,7 +248,7 @@ class ExternalApiService
                 if ($looksLikeHtml) {
                     $lastError = 'Alfa-COD /api/sellers is not deployed on the live server yet. Pull latest master on alfa-cod.com and clear route cache.';
                     Log::warning('Alfa-COD sellers endpoint returned HTML', [
-                        'user_id' => $this->user->id,
+                        'context' => $this->contextLabel,
                         'url' => $url,
                         'status' => $response->status(),
                     ]);
@@ -197,7 +258,7 @@ class ExternalApiService
                 if (!$response->successful()) {
                     $lastError = 'Failed to fetch sellers (HTTP ' . $response->status() . ')';
                     Log::warning('Failed to fetch Alfa-COD sellers', [
-                        'user_id' => $this->user->id,
+                        'context' => $this->contextLabel,
                         'url' => $url,
                         'status' => $response->status(),
                         'body' => $body,
@@ -244,7 +305,7 @@ class ExternalApiService
                     ->all();
 
                 Log::info('Fetched Alfa-COD sellers', [
-                    'user_id' => $this->user->id,
+                    'context' => $this->contextLabel,
                     'url' => $url,
                     'count' => count($sellers),
                 ]);
@@ -257,7 +318,7 @@ class ExternalApiService
             } catch (\Throwable $e) {
                 $lastError = $e->getMessage();
                 Log::error('Exception while fetching Alfa-COD sellers', [
-                    'user_id' => $this->user->id,
+                    'context' => $this->contextLabel,
                     'url' => $url,
                     'error' => $e->getMessage(),
                 ]);
@@ -319,7 +380,7 @@ class ExternalApiService
             ]];
         } catch (\Throwable $e) {
             Log::warning('Failed Alfa-COD sellers fallback from test-auth', [
-                'user_id' => $this->user->id,
+                'context' => $this->contextLabel,
                 'error' => $e->getMessage(),
             ]);
 

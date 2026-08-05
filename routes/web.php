@@ -91,7 +91,7 @@ Route::middleware(['auth'])->prefix('workspaces')->name('workspaces.')->group(fu
     Route::post('/ai-settings/anthropic', [CustomerDashboardController::class, 'saveAnthropicSettings'])->name('ai-settings.anthropic.save');
     Route::post('/ai-settings/anthropic/test', [CustomerDashboardController::class, 'testAnthropicConnection'])->name('ai-settings.anthropic.test');
 
-    // Alfa-COD / System Connect (account level — same credentials for all stores)
+    // Alfa-COD Connect (account level — used to load sellers only)
     Route::get('/alfa-cod-settings', [CustomerDashboardController::class, 'externalApiSettings'])->name('alfa-cod-settings');
     Route::post('/alfa-cod-settings', [CustomerDashboardController::class, 'saveExternalApiSettings'])->name('alfa-cod-settings.save');
     Route::post('/alfa-cod-settings/test', [CustomerDashboardController::class, 'testExternalApiConnection'])->name('alfa-cod-settings.test');
@@ -104,6 +104,7 @@ Route::middleware(['auth', 'require.workspace'])->prefix('stores')->name('stores
     Route::post('/', [\App\Http\Controllers\StoreManagementController::class, 'store'])->name('store');
     Route::get('/{store}/edit', [\App\Http\Controllers\StoreManagementController::class, 'edit'])->name('edit');
     Route::put('/{store}', [\App\Http\Controllers\StoreManagementController::class, 'update'])->name('update');
+    Route::post('/{store}/system-connect/test', [\App\Http\Controllers\StoreManagementController::class, 'testSystemConnect'])->name('system-connect.test');
     Route::delete('/{store}', [\App\Http\Controllers\StoreManagementController::class, 'destroy'])->name('destroy');
     Route::post('/{store}/switch', [\App\Http\Controllers\StoreManagementController::class, 'switchStore'])->name('switch');
     Route::put('/{store}/domain', [\App\Http\Controllers\StoreManagementController::class, 'updateDomain'])->name('update-domain');

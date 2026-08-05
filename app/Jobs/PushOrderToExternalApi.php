@@ -41,16 +41,22 @@ class PushOrderToExternalApi implements ShouldQueue
             return;
         }
 
-        $apiService = new ExternalApiService($user);
-        
-        if (!$apiService->isEnabled()) {
-            Log::info('External API not enabled for user ' . $user->id);
+        $product = $lead->product;
+        $store = $product?->store;
+
+        if (!$store) {
+            Log::warning('Store not found for lead ' . $lead->id . ' — cannot push via System Connect');
             return;
         }
 
-        $product = $lead->product;
-        $store = $product?->store;
-        $websiteSettings = $store?->websiteSettings;
+        $apiService = ExternalApiService::forStore($store);
+        
+        if (!$apiService->isEnabled()) {
+            Log::info('System Connect not enabled for store ' . $store->id . ' (lead ' . $lead->id . ')');
+            return;
+        }
+
+        $websiteSettings = $store->websiteSettings;
         $sku = $lead->variation?->sku ?? $product?->sku;
         $itemPrice = (float) ($lead->selected_price ?? $product?->price ?? 0);
         $productName = $product?->name ?? 'Product from ChatEasy';
@@ -80,33 +86,35 @@ class PushOrderToExternalApi implements ShouldQueue
                 'chateasy_variation_id' => $lead->selected_variation_id,
                 'chateasy_promotion_id' => $lead->selected_promotion_id,
                 'quantity' => $quantity,
-                'chateasy_store_id' => $store?->id,
+                'chateasy_store_id' => $store->id,
                 'sku' => $sku,
                 'language' => $lead->language,
                 'created_at' => $lead->created_at->toIso8601String(),
                 'website' => $website,
-                'alfa_cod_seller_id' => $store?->alfa_cod_seller_id,
-                'alfa_cod_seller_name' => $store?->alfa_cod_seller_name,
+                'alfa_cod_seller_id' => $store->alfa_cod_seller_id,
+                'alfa_cod_seller_name' => $store->alfa_cod_seller_name,
             ]
         ];
 
         // Assign the Alfa-COD seller linked to this store so the order appears in their account
-        if ($store?->alfa_cod_seller_id) {
+        if ($store->alfa_cod_seller_id) {
             $orderData['vendor_id'] = (int) $store->alfa_cod_seller_id;
         }
 
         $result = $apiService->createOrder($orderData);
         
         if ($result['success']) {
-            Log::info('Successfully pushed lead to external API', [
+            Log::info('Successfully pushed lead to System Connect', [
                 'lead_id' => $lead->id,
-                'user_id' => $user->id
+                'store_id' => $store->id,
+                'user_id' => $user->id,
             ]);
         } else {
-            Log::error('Failed to push lead to external API', [
+            Log::error('Failed to push lead to System Connect', [
                 'lead_id' => $lead->id,
+                'store_id' => $store->id,
                 'user_id' => $user->id,
-                'error' => $result['message']
+                'error' => $result['message'],
             ]);
         }
     }

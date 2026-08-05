@@ -151,6 +151,11 @@
                                                         Seller: {{ $store->alfa_cod_seller_name ?: ('#' . $store->alfa_cod_seller_id) }}
                                                     </span>
                                                 @endif
+                                                @if($store->hasSystemConnectConfigured())
+                                                    <span class="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded" title="{{ $store->system_connect_url }}">
+                                                        System Connect
+                                                    </span>
+                                                @endif
                                             </div>
                                             <p class="text-sm text-gray-600 mt-1">
                                                 @if($store->domain)

@@ -22,6 +22,9 @@ class Store extends Model
         'tiktok_pixel_enabled',
         'alfa_cod_seller_id',
         'alfa_cod_seller_name',
+        'system_connect_url',
+        'system_connect_key_encrypted',
+        'system_connect_enabled',
     ];
 
     protected $casts = [
@@ -29,7 +32,15 @@ class Store extends Model
         'facebook_pixel_enabled' => 'boolean',
         'tiktok_pixel_enabled' => 'boolean',
         'alfa_cod_seller_id' => 'integer',
+        'system_connect_enabled' => 'boolean',
     ];
+
+    public function hasSystemConnectConfigured(): bool
+    {
+        return $this->system_connect_enabled
+            && filled($this->system_connect_url)
+            && filled($this->system_connect_key_encrypted);
+    }
 
     protected static function boot()
     {

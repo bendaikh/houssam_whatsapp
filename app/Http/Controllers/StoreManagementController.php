@@ -96,6 +96,9 @@ class StoreManagementController extends Controller
             'is_active' => 'boolean',
             'alfa_cod_seller_id' => 'nullable|integer|min:1',
             'alfa_cod_seller_name' => 'nullable|string|max:255',
+            'system_connect_url' => 'nullable|url|max:500',
+            'system_connect_key' => 'nullable|string|max:2048',
+            'system_connect_enabled' => 'nullable|boolean',
         ]);
         
         $validated['user_id'] = auth()->id();
@@ -110,6 +113,8 @@ class StoreManagementController extends Controller
             $request->input('alfa_cod_seller_id'),
             $request->input('alfa_cod_seller_name')
         );
+
+        $this->applySystemConnectSettings($validated, $request);
         
         $store = Store::create($validated);
         
@@ -139,6 +144,10 @@ class StoreManagementController extends Controller
             'is_active' => 'boolean',
             'alfa_cod_seller_id' => 'nullable|integer|min:1',
             'alfa_cod_seller_name' => 'nullable|string|max:255',
+            'system_connect_url' => 'nullable|url|max:500',
+            'system_connect_key' => 'nullable|string|max:2048',
+            'system_connect_enabled' => 'nullable|boolean',
+            'clear_system_connect_key' => 'nullable|boolean',
         ]);
 
         $this->applySellerAssignment(
@@ -146,10 +155,37 @@ class StoreManagementController extends Controller
             $request->input('alfa_cod_seller_id'),
             $request->input('alfa_cod_seller_name')
         );
+
+        $this->applySystemConnectSettings($validated, $request, $store);
         
         $store->update($validated);
         
         return redirect()->route('stores.dashboard')->with('success', 'Store updated successfully!');
+    }
+
+    public function testSystemConnect(Store $store)
+    {
+        $this->authorize('update', $store);
+
+        $apiService = \App\Services\ExternalApiService::forStore($store);
+
+        if (!$apiService->isEnabled()) {
+            return redirect()
+                ->route('stores.edit', $store)
+                ->with('error', 'System Connect is not enabled or configured for this store.');
+        }
+
+        $result = $apiService->testConnection();
+
+        if ($result['success']) {
+            return redirect()
+                ->route('stores.edit', $store)
+                ->with('success', 'System Connect test successful for this store.');
+        }
+
+        return redirect()
+            ->route('stores.edit', $store)
+            ->with('error', 'System Connect test failed: ' . ($result['message'] ?? 'Unknown error'));
     }
     
     public function destroy(Store $store)
@@ -261,7 +297,7 @@ class StoreManagementController extends Controller
     protected function fetchAlfaCodSellers(): array
     {
         $user = auth()->user();
-        $apiService = new \App\Services\ExternalApiService($user);
+        $apiService = \App\Services\ExternalApiService::forUser($user);
 
         if (!$apiService->isEnabled()) {
             return [];
@@ -269,7 +305,7 @@ class StoreManagementController extends Controller
 
         $result = $apiService->getSellers();
 
-        return $result['success'] ? ($result['sellers'] ?? []) : [];
+        return $result['sellers'] ?? [];
     }
 
     /**
@@ -293,5 +329,34 @@ class StoreManagementController extends Controller
             ?? $matched['name']
             ?? (filled($manualName) ? trim($manualName) : null)
             ?? ('Seller #' . $sellerId);
+    }
+
+    /**
+     * Per-store System Connect credentials used to push orders.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    protected function applySystemConnectSettings(array &$validated, Request $request, ?Store $store = null): void
+    {
+        $validated['system_connect_url'] = $validated['system_connect_url'] ?? null;
+        $validated['system_connect_enabled'] = $request->boolean('system_connect_enabled');
+
+        unset($validated['system_connect_key'], $validated['clear_system_connect_key']);
+
+        if ($request->boolean('clear_system_connect_key')) {
+            $validated['system_connect_key_encrypted'] = null;
+            return;
+        }
+
+        $newKey = trim((string) $request->input('system_connect_key', ''));
+        if ($newKey !== '') {
+            $validated['system_connect_key_encrypted'] = \Crypt::encryptString($newKey);
+            return;
+        }
+
+        // Keep existing key on update when no new key was provided
+        if ($store) {
+            unset($validated['system_connect_key_encrypted']);
+        }
     }
 }

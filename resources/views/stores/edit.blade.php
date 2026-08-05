@@ -14,7 +14,18 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-4">
+            @if (session('success'))
+                <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                    <p class="text-sm text-red-700">{{ session('error') }}</p>
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
                     <form action="{{ route('stores.update', $store) }}" method="POST">
@@ -101,6 +112,61 @@
                                 @enderror
                             </div>
 
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4" id="system-connect">
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-gray-900">System Connect</h3>
+                                        <p class="text-xs text-gray-500 mt-1">Per-store API credentials used to push landing-page orders. Each store can use a different connection.</p>
+                                    </div>
+                                    @if($store->hasSystemConnectConfigured())
+                                        <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">Active</span>
+                                    @else
+                                        <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700">Not configured</span>
+                                    @endif
+                                </div>
+
+                                <div>
+                                    <label for="system_connect_url" class="block text-sm font-medium text-gray-700">Base API URL</label>
+                                    <input type="url" name="system_connect_url" id="system_connect_url"
+                                        value="{{ old('system_connect_url', $store->system_connect_url) }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="https://smanager.site">
+                                    <p class="mt-1 text-xs text-gray-500">Base URL without <code>/api</code> at the end.</p>
+                                    @error('system_connect_url')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="system_connect_key" class="block text-sm font-medium text-gray-700">API Key</label>
+                                    <input type="password" name="system_connect_key" id="system_connect_key" autocomplete="off"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="{{ $store->system_connect_key_encrypted ? 'New key to replace the current one' : 'capi_...' }}">
+                                    <p class="mt-1 text-xs text-gray-500">Encrypted and stored securely for this store only. Leave blank to keep the current key.</p>
+                                    @error('system_connect_key')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 text-sm text-gray-700 cursor-pointer select-none">
+                                        <input type="checkbox" name="system_connect_enabled" value="1"
+                                            {{ old('system_connect_enabled', $store->system_connect_enabled) ? 'checked' : '' }}
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <span>
+                                            <span class="font-medium text-gray-900">Enable System Connect</span>
+                                            <span class="block text-xs text-gray-500">Push orders from this store via its own API credentials</span>
+                                        </span>
+                                    </label>
+                                    @if($store->system_connect_key_encrypted)
+                                        <label class="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none">
+                                            <input type="checkbox" name="clear_system_connect_key" value="1" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            Remove saved API key
+                                        </label>
+                                    @endif
+                                </div>
+                            </div>
+
                             <div class="flex items-center">
                                 <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $store->is_active) ? 'checked' : '' }}
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -119,6 +185,15 @@
                             </div>
                         </div>
                     </form>
+
+                    @if($store->system_connect_url && $store->system_connect_key_encrypted)
+                        <form method="POST" action="{{ route('stores.system-connect.test', $store) }}" class="mt-4 pt-4 border-t border-gray-200">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 bg-white border border-gray-300 hover:border-blue-400 text-gray-800 text-sm font-medium rounded transition">
+                                Test System Connect
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>

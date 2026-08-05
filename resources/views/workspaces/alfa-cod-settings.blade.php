@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Alfa-COD Connect') }}
             </h2>
-            <p class="text-sm text-gray-600 mt-1">Connect Alfa-COD to push orders and assign sellers to your stores</p>
+            <p class="text-sm text-gray-600 mt-1">Connect Alfa-COD to load sellers and assign them to your stores. Order push uses each store's System Connect.</p>
         </div>
     </x-slot>
 
@@ -28,7 +28,7 @@
                             <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900">Alfa-COD API Connection</h3>
-                                    <p class="text-sm text-gray-500 mt-1">Configure your Alfa-COD (smanager) API to receive orders and load sellers</p>
+                                    <p class="text-sm text-gray-500 mt-1">Account-level connection used only to load sellers for store assignment</p>
                                 </div>
                                 @if($user->external_api_enabled && $user->external_api_url && $user->external_api_key_encrypted)
                                     <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">Active</span>
@@ -72,8 +72,8 @@
                                             {{ $user->external_api_enabled ? 'checked' : '' }}
                                             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                         <div>
-                                            <div class="font-medium text-gray-900">Enable API Integration</div>
-                                            <div class="text-xs text-gray-500 mt-0.5">Push landing-page orders to Alfa-COD automatically</div>
+                                            <div class="font-medium text-gray-900">Enable Alfa-COD Connect</div>
+                                            <div class="text-xs text-gray-500 mt-0.5">Load sellers from Alfa-COD to assign them to stores</div>
                                         </div>
                                     </label>
                                     @if($user->external_api_key_encrypted)
@@ -195,7 +195,7 @@
                         <ol class="space-y-3 text-sm text-gray-600">
                             <li class="flex gap-3">
                                 <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">1</span>
-                                <span>Connect Alfa-COD with your Base URL and API key</span>
+                                <span>Connect Alfa-COD with your Base URL and API key (sellers only)</span>
                             </li>
                             <li class="flex gap-3">
                                 <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">2</span>
@@ -207,7 +207,7 @@
                             </li>
                             <li class="flex gap-3">
                                 <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">4</span>
-                                <span>Orders are pushed with that seller into their Alfa-COD account</span>
+                                <span>Configure each store's System Connect to push orders for that store</span>
                             </li>
                         </ol>
                     </div>

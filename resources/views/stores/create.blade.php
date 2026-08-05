@@ -97,6 +97,46 @@
                                 @enderror
                             </div>
 
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-900">System Connect</h3>
+                                    <p class="text-xs text-gray-500 mt-1">Per-store API credentials used to push landing-page orders. Each store can use a different connection.</p>
+                                </div>
+
+                                <div>
+                                    <label for="system_connect_url" class="block text-sm font-medium text-gray-700">Base API URL</label>
+                                    <input type="url" name="system_connect_url" id="system_connect_url"
+                                        value="{{ old('system_connect_url') }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="https://smanager.site">
+                                    <p class="mt-1 text-xs text-gray-500">Base URL without <code>/api</code> at the end.</p>
+                                    @error('system_connect_url')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="system_connect_key" class="block text-sm font-medium text-gray-700">API Key</label>
+                                    <input type="password" name="system_connect_key" id="system_connect_key" autocomplete="off"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="capi_...">
+                                    <p class="mt-1 text-xs text-gray-500">Encrypted and stored securely for this store only.</p>
+                                    @error('system_connect_key')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <label class="flex items-center gap-3 text-sm text-gray-700 cursor-pointer select-none">
+                                    <input type="checkbox" name="system_connect_enabled" value="1"
+                                        {{ old('system_connect_enabled') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span>
+                                        <span class="font-medium text-gray-900">Enable System Connect</span>
+                                        <span class="block text-xs text-gray-500">Push orders from this store via its own API credentials</span>
+                                    </span>
+                                </label>
+                            </div>
+
                             <div class="flex items-center">
                                 <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
